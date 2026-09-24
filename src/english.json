@@ -26,7 +26,6 @@
   "invalid": "Invalid notation",
   "noDice": "Choose a die or enter notation",
   "no3d": "This roll has no compatible 3D dice. The result is shown below.",
-  "tooMany": "Too many dice for 3D. The complete result is shown below.",
   "graphicsError": "3D is unavailable. The complete result is shown below.",
   "total": "Total",
   "successes": "Successes",

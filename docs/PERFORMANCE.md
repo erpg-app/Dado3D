@@ -15,8 +15,9 @@ do dispositivo; registre-os em aparelho de teste, sem extrapolar do APK.
    até a Activity; meça o tempo até a interface interativa com as marcas
    `dado3d:interactive` e `dado3d:viewer-ready` no WebView remoto.
 3. Meça a primeira rolagem pelas marcas `dado3d:roll-start`,
-   `dado3d:result-ready` e `dado3d:roll-complete`. Compare uma rolagem de
-   `2d6+d20` com uma de `30d6` para o fallback textual.
+   `dado3d:result-ready` e `dado3d:roll-complete`. Compare `2d6+d20` com
+   `30d6` para medir uma cena 3D grande; use um dado sem modelo para conferir
+   o fallback textual.
 4. Após 30 segundos em repouso, registre `adb shell dumpsys meminfo
    app.erpg.dado3d` e CPU no profiler do Android. Repita durante uma rolagem.
    Inspecione os quadros no profiler: após a animação, não deve haver quadros
@@ -71,18 +72,23 @@ necessária distribuição portátil.
 
 | Medida | Referência inicial | Build com modos de exibição e idiomas compactados |
 |---|---:|---:|
-| Conteúdo web, bruto | 581.212 bytes | 564.791 bytes |
-| Conteúdo web, gzip por arquivo | 259.908 bytes | 248.000 bytes |
-| JavaScript minificado, bruto | — | 214.198 bytes |
+| Conteúdo web, bruto | 581.212 bytes | 554.911 bytes |
+| Conteúdo web, gzip por arquivo | 259.908 bytes | 245.867 bytes |
+| JavaScript minificado, bruto | — | 214.040 bytes |
 | CSS minificado, bruto | — | 12.502 bytes |
-| Catálogos, bruto | — | 103.787 bytes |
+| Catálogos, bruto | — | 94.065 bytes |
 
 O Vite 8 já usa [Oxc para minificar JavaScript e Lightning CSS para
 CSS](https://vite.dev/config/build-options.html). Neste build, substituir Oxc
 por Terser **aumentou** os dois arquivos JavaScript de 214.198 para cerca de
 217.250 bytes, além de aumentar o tempo de build; mantivemos Oxc. Os 103
 catálogos continuam como objetos JSON legíveis no código fonte, mas viram
-listas na pasta `dist`, economizando 34.608 bytes brutos sem mudar as mensagens.
+listas na pasta `dist`, economizando 33.578 bytes brutos sem mudar as mensagens.
+
+A cena não corta mais as rolagens acima de 24 corpos. Para pilhas maiores, o
+renderizador faz um arremesso físico único com todos os dados resolvidos pelo
+Dicecore, em vez de reproduzir cada evento separadamente. Assim o resultado e
+as faces permanecem completos; rolagens muito grandes podem demorar.
 
 Os valores gzip acima são uma medida comparativa de compressibilidade, não
 arquivos `.gz` distribuídos. O [APK já é um arquivo

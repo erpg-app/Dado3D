@@ -1,4 +1,4 @@
 {
-  "maxRawBytes": 564791,
-  "note": "Checked build on 2026-09-24 with standard, compact and 3D-only views plus packed locale catalogs. Growth above 5% needs a measured baseline review."
+  "maxRawBytes": 554911,
+  "note": "Checked build on 2026-09-24 with three view modes, 3D dice without a scene cap and packed locale catalogs. Growth above 5% needs a measured baseline review."
 }

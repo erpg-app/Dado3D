@@ -46,7 +46,6 @@ const translationSource = {
   invalid: 'Invalid dice notation',
   noDice: 'Choose a dice or enter dice notation',
   no3d: 'This dice roll has no compatible 3D dice. The result is shown below.',
-  tooMany: 'Too many dice for 3D. The full result is shown below.',
   graphicsError: '3D graphics are unavailable. The full dice result is shown below.',
   net: 'Net successes',
   values: 'Dice faces',
@@ -79,7 +78,6 @@ for (const [index, code] of codes.entries()) {
       preparing: 'Preparando 3D…', rolling: 'Rolando…', invalid: 'Notação inválida',
       noDice: 'Escolha um dado ou digite uma notação',
       no3d: 'Esta rolagem não possui dados 3D compatíveis. O resultado aparece abaixo.',
-      tooMany: 'Há dados demais para o 3D. O resultado completo aparece abaixo.',
       graphicsError: 'O 3D não está disponível. O resultado completo aparece abaixo.',
       net: 'Saldo', values: 'Faces',
     })

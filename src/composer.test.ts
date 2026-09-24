@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { rollRpgDice } from '@erpg/dicecore/core'
-import { addDie, parseSimplePool, removeDie, visualBodyCount } from './composer'
+import { addDie, parseSimplePool, removeDie } from './composer'
 
 describe('shared pool and notation', () => {
   it('taps build the same seeded roll as typed notation', () => {
@@ -23,10 +23,6 @@ describe('shared pool and notation', () => {
     expect(addDie('2#d6', 20)).toEqual({ expression: '2#d6+d20', valid: true })
     expect(addDie('not dice', 20)).toEqual({ expression: 'not dice', valid: false })
     expect(parseSimplePool('5d10>=8f=1')).toBeNull()
-  })
-
-  it('counts percentile dice as two visual bodies', () => {
-    expect(visualBodyCount([{ sides: 100 }, { sides: 6 }])).toBe(3)
   })
 
   it('resolves modifiers and success pools through Dicecore', () => {

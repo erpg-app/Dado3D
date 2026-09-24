@@ -70,7 +70,3 @@ export function removeDie(expression: string, sides: StandardSides): string {
   else dice.set(sides, count - 1)
   return formatSimplePool({ dice, modifier: simple.modifier })
 }
-
-export function visualBodyCount(dice: readonly { readonly sides: number | string }[]): number {
-  return dice.reduce((total, die) => total + (die.sides === 100 ? 2 : 1), 0)
-}

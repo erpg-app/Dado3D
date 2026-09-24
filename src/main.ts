@@ -3,7 +3,7 @@ import './styles.css'
 import { createDiceEngine } from '@erpg/dicecore/core'
 import type { DiceRollResult } from '@erpg/dicecore/core'
 import type { DiceTimelineEvent } from '@erpg/dice3dview'
-import { addDie, DICE_SIDES, parseSimplePool, removeDie, visualBodyCount } from './composer'
+import { addDie, DICE_SIDES, parseSimplePool, removeDie } from './composer'
 import type { StandardSides } from './composer'
 import { applyMessages, languageCode, languageOptions, matchLanguage, message, setLanguage } from './i18n'
 
@@ -17,19 +17,10 @@ const colors: Record<Color, string> = {
   violet: '#a48bff', blue: '#67a7ff', mint: '#64d6ac', amber: '#f2b76b',
 }
 const supportedSides = new Set<number>(DICE_SIDES)
-const maxVisualBodies = 24
+const timelineThreshold = 24
 const themeAssets = ['default.json', 'normal.webp', 'diffuse-light.webp', 'diffuse-dark.webp', 'glyph-orientation.json', 'coin-1.svg', 'coin-2.svg']
 const engine = createDiceEngine({
-  limits: {
-    maxInputLength: 300,
-    maxInitialDice: 100,
-    maxGeneratedDice: 200,
-    maxRolls: 20,
-    maxEvents: 2_000,
-    maxRandomCalls: 10_000,
-    maxModifierSteps: 10_000,
-    maxOutputLength: 10_000,
-  },
+  limits: { maxInputLength: 300 },
 })
 
 const find = <T extends HTMLElement>(selector: string): T => {
@@ -218,7 +209,8 @@ async function prewarmViewer(): Promise<Viewer> {
       themeColor: colors[color],
       particles: null,
       glow: null,
-      maxDice: maxVisualBodies,
+      // The viewer requires an integer; do not add a separate 3D dice cap.
+      maxDice: Number.MAX_SAFE_INTEGER,
     })
     try {
       // Populate the local WebView cache without decoding textures or starting
@@ -321,28 +313,35 @@ async function roll(): Promise<void> {
     showStatus(message('no3d'))
     return
   }
-  if (visualBodyCount(result.dice) > maxVisualBodies) {
-    viewer?.clear()
-    stagePlaceholder.hidden = false
-    revealTextResult()
-    showStatus(message('tooMany'))
-    return
-  }
-
   showStatus(viewer ? message('rolling') : message('preparing'))
   try {
     const prepared = viewerReady ? await viewerReady : await prewarmViewer()
     if (current !== activeRoll) return
-    const ids = new Set(result.dice.map(die => die.id))
     stagePlaceholder.hidden = true
     showStatus(message('rolling'))
-    await prepared.displayTimeline({
-      id: `roll-${current}`,
-      seed: `${Date.now()}-${Math.random()}`,
-      dice: result.dice.map(die => ({ id: die.id, sides: die.sides as StandardSides, themeColor: colors[color] })),
-      // Dicecore's die journal is structurally compatible with the viewer's timeline.
-      events: result.events.filter(event => event.subject === 'die' && ids.has(event.dieId)) as unknown as DiceTimelineEvent[],
-    })
+    const presentation = { id: `roll-${current}`, seed: `${Date.now()}-${Math.random()}` }
+    if (result.dice.length > timelineThreshold) {
+      // Present one physical throw. Replaying each journal event in a large pool
+      // can take minutes, while the resolved faces are already known.
+      await prepared.display({
+        ...presentation,
+        dice: result.dice.map(die => ({
+          id: die.id,
+          sides: die.sides as StandardSides,
+          value: die.value,
+          discarded: !die.included,
+          themeColor: colors[color],
+        })),
+      })
+    } else {
+      const ids = new Set(result.dice.map(die => die.id))
+      await prepared.displayTimeline({
+        ...presentation,
+        dice: result.dice.map(die => ({ id: die.id, sides: die.sides as StandardSides, themeColor: colors[color] })),
+        // Dicecore's die journal is structurally compatible with the viewer's timeline.
+        events: result.events.filter(event => event.subject === 'die' && ids.has(event.dieId)) as unknown as DiceTimelineEvent[],
+      })
+    }
     if (current !== activeRoll) return
     showStatus('')
     performance.mark('dado3d:roll-complete')

@@ -8,9 +8,11 @@ O menu no canto da cena oferece as exibições **Padrão**, **Compacto** e
 **Só 3D**. No modo compacto, o lápis abre a edição; no modo Só 3D, toque na
 cena para rolar novamente e use o menu ou Escape para voltar.
 
-O resultado textual vem do Dicecore; a cena 3D apenas apresenta os valores. A cena mostra até 24
-corpos visuais, e o texto continua completo quando a fórmula ultrapassa o
-limite ou o WebGL não está disponível.
+O resultado textual vem do Dicecore; a cena 3D apresenta todos os dados
+compatíveis que a fórmula gerar, mesmo em rolagens grandes. O texto continua
+completo quando não há modelo 3D compatível ou o WebGL não está disponível.
+Pilhas grandes usam um único arremesso físico para evitar a reprodução longa
+de cada evento individual.
 
 ## Tecnologia
 
