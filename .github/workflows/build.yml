@@ -44,6 +44,7 @@ jobs:
         with:
           gradle-version: '8.14.2'
       - run: npm ci
+      - run: npm run cordova:prepare
       - run: npx cordova platform add android@15.1.0 --nosave
       - run: npm run android
       - run: node scripts/measure-native.mjs android platforms/android/app/build/outputs/apk/debug native-size-android.json
@@ -64,6 +65,7 @@ jobs:
           cache: npm
       - run: npm ci
       - run: pod --version
+      - run: npm run cordova:prepare
       - run: npx cordova platform add ios@8.1.1 --nosave
       - run: npm run ios
       - name: Archive simulator build
@@ -110,12 +112,11 @@ jobs:
       - run: sudo apt-get update
       - run: sudo apt-get install -y libwebkit2gtk-4.1-dev build-essential curl wget file libxdo-dev libssl-dev libayatana-appindicator3-dev librsvg2-dev
       - run: npm ci
-      - run: npm run desktop -- --bundles deb,appimage
+      - run: npm run desktop -- --bundles deb
       - run: node scripts/measure-native.mjs linux src-tauri/target/release/bundle native-size-linux.json
       - uses: actions/upload-artifact@v4
         with:
           name: dado3d-linux
           path: |
             src-tauri/target/release/bundle/deb/*.deb
-            src-tauri/target/release/bundle/appimage/*.AppImage
             native-size-linux.json

@@ -47,7 +47,7 @@ npm run ios
 
 Para desktop, instale Rust e os requisitos de sistema do Tauri 2. Execute
 `npm run desktop -- --bundles nsis` no Windows ou
-`npm run desktop -- --bundles deb,appimage` no Linux. O CI gera os quatro
+`npm run desktop -- --bundles deb` no Linux. O CI gera os quatro
 pacotes de teste e relatórios de tamanho em cada push para `main`.
 
 ## Tamanho e desempenho
