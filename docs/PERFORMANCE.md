@@ -34,16 +34,16 @@ substituem medidas em dispositivo real.
 |---|---:|
 | Conteúdo web, bruto | 581.212 bytes |
 | Conteúdo web, gzip por arquivo | 259.908 bytes |
-| APK Android debug | 3.736.267 bytes |
+| APK Android debug | 3.732.731 bytes |
 | Instalador Windows NSIS no CI | 2.074.989 bytes |
 | Pacote Linux `.deb` no CI | 3.078.678 bytes |
-| WebView interativa após início da navegação | 905 ms |
-| Cena 3D e assets prontos | 1.921 ms |
-| Cálculo de `2d6+d20` | 21 ms |
-| Primeira rolagem 3D, do toque ao fim | 4.219 ms |
-| PSS em repouso após rolagem | 118.067 KiB |
+| WebView interativa após início da navegação | 474 ms |
+| Cena 3D e assets prontos | 2.064 ms |
+| Cálculo de `2d6+d20` | 9 ms |
+| Primeira rolagem 3D, do toque ao fim | 3.576 ms |
+| PSS em repouso após rolagem | 123.335 KiB |
 | CPU em repouso | 0,0% na amostra de `top` |
-| CPU durante rolagem | 96,1% na amostra de `top` |
+| CPU durante rolagem | 103% na amostra de `top` |
 | Quadros solicitados em 2 s de repouso | 0 |
 
 Medição em emulador Pixel 10 Pro XL com Android 17, WebView e imagem de sistema
@@ -56,6 +56,8 @@ desempenho em outros dispositivos.
 
 Com Wi-Fi e dados móveis desativados no emulador, o app abriu em
 `https://localhost`, carregou os assets 3D locais e completou `2d6+d20`.
+Ao voltar para a tela inicial do Android, o evento `pause` liberou o canvas;
+`resume` recriou a cena na volta ao app.
 
 O AppImage Linux mediu 78.785.016 bytes no primeiro build porque leva mais
 dependências consigo. Por priorizar tamanho, o CI publica o `.deb`, que usa o

@@ -1,4 +1,4 @@
-import { cp, mkdir, rm, stat } from 'node:fs/promises'
+import { cp, mkdir, readFile, rm, stat, writeFile } from 'node:fs/promises'
 import { dirname, join, resolve, sep } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
@@ -11,4 +11,8 @@ if (!(await stat(source)).isDirectory()) throw new Error('Build the web app firs
 await rm(target, { recursive: true, force: true })
 await mkdir(target)
 await cp(source, target, { recursive: true })
+const htmlPath = join(target, 'index.html')
+const html = await readFile(htmlPath, 'utf8')
+if (!html.includes('</head>')) throw new Error('Cordova HTML head missing')
+await writeFile(htmlPath, html.replace('</head>', '    <script src="./cordova.js"></script>\n  </head>'))
 console.log('Copied web build to Cordova www/')
