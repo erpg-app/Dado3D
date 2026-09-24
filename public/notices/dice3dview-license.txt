@@ -1,0 +1,150 @@
+Licença de Uso Aberto e Autorizado ERPG, versão 1.0
+ERPG Open Source and Authorized Use License, version 1.0
+
+Copyright (c) 2026 Arkanus. Todos os direitos reservados, exceto os concedidos abaixo.
+
+Português (versão de referência)
+================================
+
+1. Definições
+
+"Software": o pacote @erpg/dice3dview a partir da versão 3.0.0, incluindo
+código-fonte, builds, documentação e exemplos, e suas versões posteriores
+publicadas sob esta licença.
+
+"Licenciante": Arkanus, titular dos direitos sobre o Software.
+
+"Projeto de Código Aberto": um projeto cujo código-fonte completo, incluindo
+todas as partes que usam, incorporam ou dependem do Software, está disponível
+publicamente e sem custo sob uma licença aprovada pela Open Source Initiative
+(OSI) ou reconhecida como livre pela Free Software Foundation (FSF).
+
+"Autorização": permissão prévia e por escrito do Licenciante para um uso
+determinado, nos termos que ela estabelecer.
+
+2. Uso livre em Projetos de Código Aberto
+
+O Licenciante concede, gratuitamente, a qualquer pessoa o direito de usar,
+copiar, modificar, mesclar, publicar e distribuir o Software como parte de um
+Projeto de Código Aberto, desde que:
+
+a) o projeto permaneça um Projeto de Código Aberto enquanto usar o Software;
+b) este texto de licença e os avisos de copyright sejam mantidos em todas as
+   cópias ou partes substanciais do Software;
+c) versões modificadas do próprio Software sejam distribuídas sob esta mesma
+   licença, com o código-fonte das modificações disponível publicamente.
+
+3. Todos os demais usos exigem Autorização
+
+Qualquer uso fora de um Projeto de Código Aberto exige Autorização, incluindo,
+sem limitação: produtos, aplicativos, jogos ou sites de código fechado ou
+proprietário; serviços oferecidos pela internet (SaaS) cujo código não seja
+público; ferramentas internas de empresas; e redistribuição do Software fora
+das condições da seção 2. Sem Autorização, nenhum direito é concedido para
+esses usos. A Autorização pode ser solicitada pelos canais oficiais do
+Licenciante, como https://github.com/arkanus-app/dice-box-erpg.
+
+4. Componentes de terceiros
+
+Partes do Software derivadas de outros projetos continuam sob as licenças
+originais desses projetos, listadas em THIRD_PARTY_NOTICES.md. Esta licença
+não restringe os direitos que essas licenças concedem sobre essas partes.
+
+5. Versões anteriores
+
+As versões do pacote publicadas antes da 3.0.0 continuam sob a licença MIT
+com que foram distribuídas. Esta licença vale apenas para o Software.
+
+6. Rescisão
+
+Os direitos concedidos terminam automaticamente se estes termos forem
+descumpridos. Eles são restabelecidos se o descumprimento for corrigido em até
+30 dias após o aviso do Licenciante, salvo reincidência.
+
+7. Isenção de garantia e limitação de responsabilidade
+
+O SOFTWARE É FORNECIDO "NO ESTADO EM QUE SE ENCONTRA", SEM GARANTIA DE
+QUALQUER TIPO, EXPRESSA OU IMPLÍCITA, INCLUINDO GARANTIAS DE
+COMERCIALIZAÇÃO, ADEQUAÇÃO A UM FIM ESPECÍFICO E NÃO VIOLAÇÃO. EM NENHUMA
+HIPÓTESE OS AUTORES OU O LICENCIANTE SERÃO RESPONSÁVEIS POR QUALQUER
+REIVINDICAÇÃO, DANO OU OUTRA RESPONSABILIDADE, SEJA EM AÇÃO CONTRATUAL,
+EXTRACONTRATUAL OU DE OUTRA NATUREZA, DECORRENTE DO SOFTWARE, DE SEU USO OU
+DE OUTRAS OPERAÇÕES COM ELE.
+
+8. Idioma
+
+Em caso de divergência entre as versões em português e em inglês, prevalece
+a versão em português.
+
+English (translation)
+=====================
+
+1. Definitions
+
+"Software": the @erpg/dice3dview package from version 3.0.0 on, including
+source code, builds, documentation and examples, and its later versions
+released under this license.
+
+"Licensor": Arkanus, the holder of the rights to the Software.
+
+"Open Source Project": a project whose complete source code, including every
+part that uses, incorporates or depends on the Software, is publicly available
+free of charge under a license approved by the Open Source Initiative (OSI) or
+recognized as free by the Free Software Foundation (FSF).
+
+"Authorization": prior written permission from the Licensor for a given use,
+on the terms it sets.
+
+2. Free use in Open Source Projects
+
+The Licensor grants anyone, free of charge, the right to use, copy, modify,
+merge, publish and distribute the Software as part of an Open Source Project,
+provided that:
+
+a) the project remains an Open Source Project while it uses the Software;
+b) this license text and the copyright notices are kept in all copies or
+   substantial portions of the Software;
+c) modified versions of the Software itself are distributed under this same
+   license, with the source code of the modifications publicly available.
+
+3. Every other use requires Authorization
+
+Any use outside an Open Source Project requires Authorization, including,
+without limitation: closed-source or proprietary products, applications,
+games or websites; services offered over the internet (SaaS) whose source
+code is not public; internal company tools; and redistribution of the
+Software outside the conditions of section 2. Without Authorization, no
+rights are granted for such uses. Authorization can be requested through the
+Licensor's official channels, such as
+https://github.com/arkanus-app/dice-box-erpg.
+
+4. Third-party components
+
+Parts of the Software derived from other projects remain under the original
+licenses of those projects, listed in THIRD_PARTY_NOTICES.md. This license
+does not restrict the rights those licenses grant over those parts.
+
+5. Earlier versions
+
+Versions of the package published before 3.0.0 remain under the MIT license
+they were distributed with. This license applies only to the Software.
+
+6. Termination
+
+The rights granted end automatically if these terms are breached. They are
+reinstated if the breach is cured within 30 days of notice from the
+Licensor, except in case of repeated breach.
+
+7. Disclaimer of warranty and limitation of liability
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR THE LICENSOR BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
+IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+8. Language
+
+If the Portuguese and English versions differ, the Portuguese version
+prevails.

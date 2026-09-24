@@ -1,0 +1,364 @@
+import '@erpg/dice3dview/style.css'
+import './styles.css'
+import { createDiceEngine } from '@erpg/dicecore/core'
+import type { DiceRollResult } from '@erpg/dicecore/core'
+import type { DiceTimelineEvent } from '@erpg/dice3dview'
+import { addDie, DICE_SIDES, parseSimplePool, removeDie, visualBodyCount } from './composer'
+import type { StandardSides } from './composer'
+import { applyMessages, languageCode, languageOptions, matchLanguage, message, setLanguage } from './i18n'
+
+type Viewer = import('@erpg/dice3dview').DiceResultViewer
+type Theme = 'dark' | 'light'
+type Color = 'violet' | 'blue' | 'mint' | 'amber'
+
+const colors: Record<Color, string> = {
+  violet: '#a48bff', blue: '#67a7ff', mint: '#64d6ac', amber: '#f2b76b',
+}
+const supportedSides = new Set<number>(DICE_SIDES)
+const maxVisualBodies = 24
+const themeAssets = ['default.json', 'normal.webp', 'diffuse-light.webp', 'diffuse-dark.webp', 'glyph-orientation.json', 'coin-1.svg', 'coin-2.svg']
+const engine = createDiceEngine({
+  limits: {
+    maxInputLength: 300,
+    maxInitialDice: 100,
+    maxGeneratedDice: 200,
+    maxRolls: 20,
+    maxEvents: 2_000,
+    maxRandomCalls: 10_000,
+    maxModifierSteps: 10_000,
+    maxOutputLength: 10_000,
+  },
+})
+
+const find = <T extends HTMLElement>(selector: string): T => {
+  const element = document.querySelector<T>(selector)
+  if (!element) throw new Error(`Missing UI element ${selector}`)
+  return element
+}
+
+const notation = find<HTMLInputElement>('#notation')
+const rollButton = find<HTMLButtonElement>('#roll')
+const clearButton = find<HTMLButtonElement>('#clear')
+const errorNode = find<HTMLElement>('#input-error')
+const stageStatus = find<HTMLElement>('#stage-status')
+const stagePlaceholder = find<HTMLElement>('#stage-placeholder')
+const resultMain = find<HTMLElement>('#result-main')
+const resultDetail = find<HTMLElement>('#result-detail')
+const resultNotation = find<HTMLElement>('#result-notation')
+const stackSummary = find<HTMLElement>('#stack-summary')
+const stackChips = find<HTMLElement>('#stack-chips')
+const settings = find<HTMLDialogElement>('#settings-dialog')
+const languageSelect = find<HTMLSelectElement>('#language')
+
+let viewer: Viewer | null = null
+let viewerReady: Promise<Viewer> | null = null
+let viewerAbort: AbortController | null = null
+let viewerGeneration = 0
+let activeRoll = 0
+let theme: Theme = readStored('dado3d.theme') === 'light' ? 'light' : 'dark'
+let color: Color = isColor(readStored('dado3d.color')) ? readStored('dado3d.color') as Color : 'violet'
+
+function readStored(key: string): string | null {
+  try { return localStorage.getItem(key) } catch { return null }
+}
+
+function store(key: string, value: string): void {
+  try { localStorage.setItem(key, value) } catch { /* App works without storage. */ }
+}
+
+function isColor(value: string | null): value is Color {
+  return value !== null && value in colors
+}
+
+function showError(text: string): void {
+  errorNode.textContent = text
+  errorNode.hidden = !text
+}
+
+function showStatus(text: string): void {
+  stageStatus.textContent = text
+  stageStatus.hidden = !text
+}
+
+function applyTheme(): void {
+  document.documentElement.dataset.theme = theme
+  document.documentElement.style.setProperty('--accent', colors[color])
+  document.querySelector<HTMLMetaElement>('meta[name="theme-color"]')?.setAttribute('content', theme === 'dark' ? '#101216' : '#f5f5f2')
+  for (const button of document.querySelectorAll<HTMLButtonElement>('[data-theme-choice]')) {
+    button.setAttribute('aria-pressed', String(button.dataset.themeChoice === theme))
+  }
+  for (const button of document.querySelectorAll<HTMLButtonElement>('[data-color]')) {
+    button.setAttribute('aria-pressed', String(button.dataset.color === color))
+  }
+  void viewer?.updateOptions({ themeColor: colors[color] }).catch(() => {})
+}
+
+function applyLanguage(): void {
+  applyMessages()
+  find<HTMLButtonElement>('#theme-toggle').setAttribute('aria-label', `${message('theme')}: ${theme === 'dark' ? message('dark') : message('light')}`)
+  find<HTMLButtonElement>('#settings-open').setAttribute('aria-label', message('settings'))
+  find<HTMLElement>('#dice-palette').setAttribute('aria-label', message('addDie'))
+  for (const button of document.querySelectorAll<HTMLButtonElement>('.die-button')) {
+    button.setAttribute('aria-label', `${message('addDie')} d${button.dataset.die}`)
+  }
+  for (const [index, button] of [...document.querySelectorAll<HTMLButtonElement>('.color-option')].entries()) {
+    button.setAttribute('aria-label', `${message('diceColor')} ${index + 1}`)
+  }
+  renderStack()
+}
+
+function renderStack(): void {
+  const expression = notation.value.trim()
+  rollButton.disabled = !expression
+  const simple = parseSimplePool(expression)
+  stackChips.replaceChildren()
+  const count = simple ? [...simple.dice.values()].reduce((sum, item) => sum + item, 0) : 0
+  stackSummary.textContent = count ? `${count} ${message('countDice')}` : ''
+  for (const button of document.querySelectorAll<HTMLButtonElement>('.die-button')) {
+    const sides = Number(button.dataset.die) as StandardSides
+    const current = simple?.dice.get(sides) ?? 0
+    button.dataset.active = String(current > 0)
+    const badge = button.querySelector<HTMLElement>('.die-count')
+    if (badge) { badge.textContent = String(current); badge.hidden = !current }
+  }
+  if (!simple) return
+  for (const [sides, amount] of simple.dice) {
+    if (!amount) continue
+    const chip = document.createElement('span')
+    chip.className = 'stack-chip'
+    const label = document.createElement('span')
+    label.textContent = `${amount}d${sides}`
+    const remove = document.createElement('button')
+    remove.type = 'button'
+    remove.textContent = '−'
+    remove.setAttribute('aria-label', `${message('removeDie')} d${sides}`)
+    remove.addEventListener('click', () => {
+      notation.value = removeDie(notation.value, sides)
+      store('dado3d.expression', notation.value)
+      showError('')
+      renderStack()
+      notation.focus()
+    })
+    chip.append(label, remove)
+    stackChips.append(chip)
+  }
+}
+
+async function prewarmViewer(): Promise<Viewer> {
+  if (viewerReady) return viewerReady
+  const generation = viewerGeneration
+  const controller = new AbortController()
+  viewerAbort = controller
+  const pending = (async () => {
+    const { DiceResultViewer } = await import('@erpg/dice3dview')
+    const themePath = new URL('assets/dice-box/themes/default/', document.baseURI)
+    const instance = new DiceResultViewer({
+      container: '#dice-stage',
+      origin: '',
+      assetPath: new URL('assets/dice-box/', document.baseURI).href,
+      theme: 'default',
+      themeColor: colors[color],
+      particles: null,
+      glow: null,
+      maxDice: maxVisualBodies,
+    })
+    try {
+      // Populate the local WebView cache without decoding textures or starting
+      // a render loop. The renderer loads these assets on the first roll.
+      await Promise.all([
+        instance.init(),
+        Promise.all(themeAssets.map(async name => {
+          const response = await fetch(new URL(name, themePath), { signal: controller.signal })
+          if (!response.ok) throw new Error(`Missing 3D asset: ${name}`)
+          await response.arrayBuffer()
+        })),
+      ])
+      if (generation !== viewerGeneration || document.hidden) {
+        throw new Error('3D preparation cancelled')
+      }
+      viewer = instance
+      if (viewerAbort === controller) viewerAbort = null
+      performance.mark('dado3d:viewer-ready')
+      return instance
+    } catch (error) {
+      if (viewerAbort === controller) viewerAbort = null
+      instance.dispose()
+      throw error
+    }
+  })
+  const promise = pending()
+  viewerReady = promise
+  void promise.catch(() => {
+    if (viewerReady === promise) viewerReady = null
+    if (viewerAbort === controller) viewerAbort = null
+  })
+  return promise
+}
+
+function disposeViewer(): void {
+  activeRoll++
+  viewerGeneration++
+  viewerAbort?.abort()
+  viewerAbort = null
+  viewer?.dispose()
+  viewer = null
+  viewerReady = null
+  showStatus('')
+}
+
+function renderResult(result: DiceRollResult): void {
+  const number = new Intl.NumberFormat(languageCode())
+  resultNotation.textContent = result.notation
+  resultMain.textContent = result.rolls.length > 1
+    ? result.rolls.map(item => number.format(item.total)).join(' · ')
+    : number.format(result.total)
+  const pool = result.pool
+  const suffix = pool
+    ? `\n${message('successes')}: ${number.format(pool.successes)} · ${message('failures')}: ${number.format(pool.failures)} · ${message('net')}: ${number.format(pool.netSuccesses)}`
+    : ''
+  resultDetail.textContent = result.output + suffix
+}
+
+async function roll(): Promise<void> {
+  const expression = notation.value.trim()
+  if (!expression) { showError(message('noDice')); notation.focus(); return }
+  const inspection = engine.inspect(expression)
+  if (!inspection.isValid) { showError(message('invalid')); notation.focus(); return }
+  showError('')
+  const current = ++activeRoll
+  performance.mark('dado3d:roll-start')
+  let result: DiceRollResult
+  try { result = engine.roll(inspection.plan) }
+  catch { showError(message('invalid')); return }
+  if (current !== activeRoll) return
+  renderResult(result)
+  store('dado3d.expression', expression)
+  performance.mark('dado3d:result-ready')
+  performance.measure('dado3d:calculate', 'dado3d:roll-start', 'dado3d:result-ready')
+
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    viewer?.clear()
+    stagePlaceholder.hidden = false
+    showStatus('')
+    return
+  }
+  if (!result.dice.length || result.dice.some(die => typeof die.sides !== 'number' || !supportedSides.has(die.sides))) {
+    viewer?.clear()
+    stagePlaceholder.hidden = false
+    showStatus(message('no3d'))
+    return
+  }
+  if (visualBodyCount(result.dice) > maxVisualBodies) {
+    viewer?.clear()
+    stagePlaceholder.hidden = false
+    showStatus(message('tooMany'))
+    return
+  }
+
+  showStatus(viewer ? message('rolling') : message('preparing'))
+  try {
+    const prepared = viewerReady ? await viewerReady : await prewarmViewer()
+    if (current !== activeRoll) return
+    const ids = new Set(result.dice.map(die => die.id))
+    stagePlaceholder.hidden = true
+    showStatus(message('rolling'))
+    await prepared.displayTimeline({
+      id: `roll-${current}`,
+      seed: `${Date.now()}-${Math.random()}`,
+      dice: result.dice.map(die => ({ id: die.id, sides: die.sides as StandardSides, themeColor: colors[color] })),
+      // Dicecore's die journal is structurally compatible with the viewer's timeline.
+      events: result.events.filter(event => event.subject === 'die' && ids.has(event.dieId)) as unknown as DiceTimelineEvent[],
+    })
+    if (current !== activeRoll) return
+    showStatus('')
+    performance.mark('dado3d:roll-complete')
+    performance.measure('dado3d:first-roll', 'dado3d:roll-start', 'dado3d:roll-complete')
+  } catch {
+    if (current !== activeRoll) return
+    stagePlaceholder.hidden = false
+    showStatus(message('graphicsError'))
+  }
+}
+
+notation.value = readStored('dado3d.expression')?.slice(0, 300) ?? ''
+applyTheme()
+renderStack()
+
+notation.addEventListener('input', () => {
+  store('dado3d.expression', notation.value)
+  showError('')
+  renderStack()
+})
+notation.addEventListener('keydown', event => { if (event.key === 'Enter') void roll() })
+rollButton.addEventListener('click', () => void roll())
+clearButton.addEventListener('click', () => {
+  notation.value = ''
+  store('dado3d.expression', '')
+  showError('')
+  renderStack()
+  notation.focus()
+})
+for (const button of document.querySelectorAll<HTMLButtonElement>('.die-button')) {
+  button.addEventListener('click', () => {
+    const sides = Number(button.dataset.die) as StandardSides
+    const next = addDie(notation.value, sides)
+    if (!next.valid) { showError(message('invalid')); return }
+    notation.value = next.expression
+    store('dado3d.expression', next.expression)
+    showError('')
+    renderStack()
+  })
+}
+
+find<HTMLButtonElement>('#theme-toggle').addEventListener('click', () => {
+  theme = theme === 'dark' ? 'light' : 'dark'
+  store('dado3d.theme', theme)
+  applyTheme()
+  applyLanguage()
+})
+find<HTMLButtonElement>('#settings-open').addEventListener('click', () => settings.showModal())
+for (const button of document.querySelectorAll<HTMLButtonElement>('[data-theme-choice]')) {
+  button.addEventListener('click', () => {
+    theme = button.dataset.themeChoice as Theme
+    store('dado3d.theme', theme)
+    applyTheme()
+    applyLanguage()
+  })
+}
+for (const button of document.querySelectorAll<HTMLButtonElement>('[data-color]')) {
+  button.addEventListener('click', () => {
+    const next = button.dataset.color ?? null
+    if (!isColor(next)) return
+    color = next
+    store('dado3d.color', color)
+    applyTheme()
+  })
+}
+
+for (const option of languageOptions()) {
+  const element = document.createElement('option')
+  element.value = option.code
+  element.textContent = option.name
+  languageSelect.append(element)
+}
+const preferredLanguage = readStored('dado3d.language') ?? matchLanguage(navigator.languages)
+void setLanguage(preferredLanguage).then(code => {
+  languageSelect.value = code
+  applyLanguage()
+})
+languageSelect.addEventListener('change', () => {
+  void setLanguage(languageSelect.value).then(code => {
+    store('dado3d.language', code)
+    applyLanguage()
+  })
+})
+
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) disposeViewer()
+  else void prewarmViewer().catch(() => {})
+})
+document.addEventListener('pause', disposeViewer)
+document.addEventListener('resume', () => { void prewarmViewer().catch(() => {}) })
+window.addEventListener('pagehide', disposeViewer)
+performance.mark('dado3d:interactive')
+requestAnimationFrame(() => setTimeout(() => { void prewarmViewer().catch(() => {}) }, 0))

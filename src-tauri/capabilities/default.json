@@ -1,0 +1,6 @@
+{
+  "identifier": "default",
+  "description": "Dado3D uses no native commands",
+  "windows": ["main"],
+  "permissions": []
+}

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<widget id="app.erpg.dado3d" version="0.1.0" xmlns="http://www.w3.org/ns/widgets" xmlns:cdv="http://cordova.apache.org/ns/1.0">
+  <name>Dado3D</name>
+  <description>Rolagem de dados 3D offline.</description>
+  <author>Arkanus</author>
+  <content src="index.html" />
+  <icon src="res/icon.png" />
+  <preference name="DisallowOverscroll" value="true" />
+  <preference name="Orientation" value="default" />
+  <preference name="AndroidLaunchMode" value="singleTop" />
+  <preference name="hostname" value="localhost" />
+  <platform name="android">
+    <preference name="scheme" value="https" />
+    <preference name="AndroidWindowSplashScreenBackground" value="#101216" />
+  </platform>
+  <platform name="ios">
+    <preference name="scheme" value="app" />
+  </platform>
+</widget>
