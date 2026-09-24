@@ -11,6 +11,7 @@ type Viewer = import('@erpg/dice3dview').DiceResultViewer
 type Theme = 'dark' | 'light'
 type Color = 'violet' | 'blue' | 'mint' | 'amber'
 type InputMode = 'pool' | 'notation'
+type ViewMode = 'standard' | 'compact' | 'focus'
 
 const colors: Record<Color, string> = {
   violet: '#a48bff', blue: '#67a7ff', mint: '#64d6ac', amber: '#f2b76b',
@@ -38,8 +39,13 @@ const find = <T extends HTMLElement>(selector: string): T => {
 }
 
 const notation = find<HTMLInputElement>('#notation')
+const appShell = find<HTMLElement>('#app')
+const stage = find<HTMLElement>('#stage')
 const rollButton = find<HTMLButtonElement>('#roll')
 const clearButton = find<HTMLButtonElement>('#clear')
+const compactEdit = find<HTMLButtonElement>('#compact-edit')
+const viewControl = find<HTMLDetailsElement>('#view-control')
+const viewTrigger = find<HTMLElement>('#view-open')
 const errorNode = find<HTMLElement>('#input-error')
 const stageStatus = find<HTMLElement>('#stage-status')
 const stagePlaceholder = find<HTMLElement>('#stage-placeholder')
@@ -65,6 +71,8 @@ let activeRoll = 0
 let theme: Theme = readStored('dado3d.theme') === 'light' ? 'light' : 'dark'
 let color: Color = isColor(readStored('dado3d.color')) ? readStored('dado3d.color') as Color : 'violet'
 let inputMode: InputMode = readStored('dado3d.mode') === 'notation' ? 'notation' : 'pool'
+let viewMode: ViewMode = readStored('dado3d.viewMode') === 'compact' ? 'compact' : 'standard'
+let previousViewMode: 'standard' | 'compact' = viewMode
 
 function readStored(key: string): string | null {
   try { return localStorage.getItem(key) } catch { return null }
@@ -99,6 +107,30 @@ function setInputMode(next: InputMode, persist = true): void {
   if (persist) store('dado3d.mode', next)
 }
 
+function setViewMode(next: ViewMode, persist = true): void {
+  if (next === 'focus' && viewMode !== 'focus') previousViewMode = viewMode
+  viewMode = next
+  appShell.dataset.view = next
+  viewControl.open = false
+  for (const button of document.querySelectorAll<HTMLButtonElement>('[data-view-choice]')) {
+    button.setAttribute('aria-pressed', String(button.dataset.viewChoice === next))
+  }
+  if (next !== 'standard') resultCard.open = false
+  stage.title = next === 'focus' ? message('roll') : ''
+  if (next === 'focus') {
+    stage.tabIndex = 0
+    stage.focus({ preventScroll: true })
+  } else {
+    stage.removeAttribute('tabindex')
+    if (persist) store('dado3d.viewMode', next)
+  }
+}
+
+function revealTextResult(): void {
+  if (viewMode === 'focus') setViewMode('compact', false)
+  resultCard.open = true
+}
+
 function applyTheme(): void {
   document.documentElement.dataset.theme = theme
   document.documentElement.style.setProperty('--accent', colors[color])
@@ -115,6 +147,8 @@ function applyTheme(): void {
 function applyLanguage(): void {
   applyMessages()
   find<HTMLButtonElement>('#settings-open').setAttribute('aria-label', message('settings'))
+  viewTrigger.title = message('view')
+  compactEdit.title = message('edit')
   find<HTMLElement>('#dice-palette').setAttribute('aria-label', message('addDie'))
   for (const button of document.querySelectorAll<HTMLButtonElement>('.die-button')) {
     button.setAttribute('aria-label', `${message('addDie')} d${button.dataset.die}`)
@@ -123,6 +157,7 @@ function applyLanguage(): void {
     button.setAttribute('aria-label', `${message('diceColor')} ${index + 1}`)
   }
   setInputMode(inputMode, false)
+  setViewMode(viewMode, false)
   renderStack()
 }
 
@@ -246,6 +281,7 @@ function renderResult(result: DiceRollResult): void {
 async function roll(): Promise<void> {
   const expression = notation.value.trim()
   if (!expression) {
+    if (viewMode === 'focus') setViewMode(previousViewMode)
     showError(message('noDice'))
     if (inputMode === 'notation') notation.focus()
     return
@@ -253,6 +289,7 @@ async function roll(): Promise<void> {
   const inspection = engine.inspect(expression)
   if (!inspection.isValid) {
     showError(message('invalid'))
+    if (viewMode !== 'standard') setViewMode('standard')
     setInputMode('notation')
     notation.focus()
     return
@@ -273,21 +310,21 @@ async function roll(): Promise<void> {
   if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
     viewer?.clear()
     stagePlaceholder.hidden = false
-    resultCard.open = true
+    revealTextResult()
     showStatus('')
     return
   }
   if (!result.dice.length || result.dice.some(die => typeof die.sides !== 'number' || !supportedSides.has(die.sides))) {
     viewer?.clear()
     stagePlaceholder.hidden = false
-    resultCard.open = true
+    revealTextResult()
     showStatus(message('no3d'))
     return
   }
   if (visualBodyCount(result.dice) > maxVisualBodies) {
     viewer?.clear()
     stagePlaceholder.hidden = false
-    resultCard.open = true
+    revealTextResult()
     showStatus(message('tooMany'))
     return
   }
@@ -313,7 +350,7 @@ async function roll(): Promise<void> {
   } catch {
     if (current !== activeRoll) return
     stagePlaceholder.hidden = false
-    resultCard.open = true
+    revealTextResult()
     showStatus(message('graphicsError'))
   }
 }
@@ -321,6 +358,7 @@ async function roll(): Promise<void> {
 notation.value = readStored('dado3d.expression')?.slice(0, 300) ?? ''
 applyTheme()
 setInputMode(inputMode, false)
+setViewMode(viewMode, false)
 renderStack()
 
 notation.addEventListener('input', () => {
@@ -343,6 +381,31 @@ for (const button of document.querySelectorAll<HTMLButtonElement>('[data-mode-ch
     if (inputMode === 'notation') notation.focus()
   })
 }
+for (const button of document.querySelectorAll<HTMLButtonElement>('[data-view-choice]')) {
+  button.addEventListener('click', () => setViewMode(button.dataset.viewChoice as ViewMode))
+}
+compactEdit.addEventListener('click', () => {
+  setViewMode('standard')
+  if (inputMode === 'notation') notation.focus()
+})
+stage.addEventListener('click', event => {
+  if (viewMode !== 'focus') return
+  if ((event.target as Element).closest('.view-control')) return
+  if (viewControl.open) { viewControl.open = false; return }
+  void roll()
+})
+document.addEventListener('keydown', event => {
+  if (viewMode !== 'focus') return
+  if (event.key === 'Escape') {
+    if (viewControl.open) viewControl.open = false
+    else setViewMode(previousViewMode)
+    return
+  }
+  if (event.key !== 'Enter' && event.key !== ' ') return
+  if (event.target instanceof Element && event.target.closest('button, summary, input, select, textarea')) return
+  event.preventDefault()
+  void roll()
+})
 for (const button of document.querySelectorAll<HTMLButtonElement>('.die-button')) {
   button.addEventListener('click', () => {
     const sides = Number(button.dataset.die) as StandardSides

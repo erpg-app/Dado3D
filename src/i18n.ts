@@ -37,8 +37,13 @@ export async function setLanguage(code: string): Promise<string> {
     if (!response.ok) throw new Error(`Locale ${selected}: HTTP ${response.status}`)
     const catalog: unknown = await response.json()
     if (!catalog || typeof catalog !== 'object') throw new Error('Invalid locale catalog')
-    const values = catalog as Record<string, unknown>
-    for (const key of Object.keys(english) as MessageKey[]) {
+    const keys = Object.keys(english) as MessageKey[]
+    let values: Record<string, unknown>
+    if (Array.isArray(catalog)) {
+      if (catalog.length !== keys.length) throw new Error(`Incomplete locale ${selected}`)
+      values = Object.fromEntries(keys.map((key, index) => [key, catalog[index]]))
+    } else values = catalog as Record<string, unknown>
+    for (const key of keys) {
       if (typeof values[key] !== 'string' || !values[key].trim()) throw new Error(`Missing ${key} in ${selected}`)
     }
     current = values as Messages

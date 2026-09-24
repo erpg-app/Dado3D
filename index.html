@@ -14,6 +14,16 @@
         <section class="stage" aria-label="Mesa de dados" id="stage">
           <div class="stage-grid" aria-hidden="true"></div>
           <div id="dice-stage" class="dice-stage" aria-hidden="true"></div>
+          <details class="view-control" id="view-control">
+            <summary class="icon-button view-trigger" id="view-open" aria-label="Exibição" data-i18n-aria="view" title="Exibição">
+              <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 9V4h5m6 0h5v5M4 15v5h5m6 0h5v-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </summary>
+            <div class="view-options" role="group" aria-label="Exibição" data-i18n-aria="view">
+              <button type="button" data-view-choice="standard" data-i18n="standard" aria-pressed="true">Padrão</button>
+              <button type="button" data-view-choice="compact" data-i18n="compact" aria-pressed="false">Compacto</button>
+              <button type="button" data-view-choice="focus" data-i18n="only3d" aria-pressed="false">Só 3D</button>
+            </div>
+          </details>
           <button class="icon-button stage-settings" id="settings-open" type="button" aria-label="Preferências" title="Preferências">
             <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z" stroke="currentColor" stroke-width="1.8"/><path d="m19.2 13.9 1.1.9-1.5 2.6-1.4-.5a8 8 0 0 1-1.5.9l-.3 1.5h-3l-.3-1.5a8 8 0 0 1-1.6-.9l-1.4.5-1.5-2.6 1.1-.9a8 8 0 0 1 0-1.8l-1.1-.9 1.5-2.6 1.4.5a8 8 0 0 1 1.6-.9l.3-1.5h3l.3 1.5a8 8 0 0 1 1.5.9l1.4-.5 1.5 2.6-1.1.9a8 8 0 0 1 0 1.8Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" transform="translate(-1 -1)"/></svg>
           </button>
@@ -64,6 +74,9 @@
               <div class="pool-expression" id="pool-expression" dir="ltr" hidden></div>
             </div>
             <div class="input-error" id="input-error" role="alert" hidden></div>
+            <button class="compact-edit" id="compact-edit" type="button" aria-label="Editar dados" data-i18n-aria="edit" title="Editar dados">
+              <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m4 16-.5 4.5L8 20l10.8-10.8-4-4L4 16Zm9.7-9.7 4 4M15.8 4.2l1.1-1.1a2 2 0 0 1 2.8 0l1.2 1.2a2 2 0 0 1 0 2.8l-1.1 1.1" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
             <button class="roll-button" id="roll" type="button" disabled>
               <span data-i18n="roll">Rolar dados</span>
               <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 12h14m-5-5 5 5-5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg>

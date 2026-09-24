@@ -6,7 +6,7 @@
     "predev": "node scripts/sync-assets.mjs",
     "dev": "vite",
     "prebuild:web": "node scripts/sync-assets.mjs",
-    "build:web": "tsc --noEmit && vite build && node scripts/measure.mjs",
+    "build:web": "tsc --noEmit && vite build && node scripts/pack-locales.mjs && node scripts/measure.mjs",
     "preview": "vite preview",
     "test": "vitest run",
     "check": "npm run test && npm run build:web",

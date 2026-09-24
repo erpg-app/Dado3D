@@ -66,3 +66,27 @@ O AppImage Linux mediu 78.785.016 bytes no primeiro build porque leva mais
 dependências consigo. Por priorizar tamanho, o CI publica o `.deb`, que usa o
 WebKitGTK do sistema; o AppImage pode ser gerado manualmente quando for
 necessária distribuição portátil.
+
+## Otimização do build web — 24/09/2026
+
+| Medida | Referência inicial | Build com modos de exibição e idiomas compactados |
+|---|---:|---:|
+| Conteúdo web, bruto | 581.212 bytes | 564.791 bytes |
+| Conteúdo web, gzip por arquivo | 259.908 bytes | 248.000 bytes |
+| JavaScript minificado, bruto | — | 214.198 bytes |
+| CSS minificado, bruto | — | 12.502 bytes |
+| Catálogos, bruto | — | 103.787 bytes |
+
+O Vite 8 já usa [Oxc para minificar JavaScript e Lightning CSS para
+CSS](https://vite.dev/config/build-options.html). Neste build, substituir Oxc
+por Terser **aumentou** os dois arquivos JavaScript de 214.198 para cerca de
+217.250 bytes, além de aumentar o tempo de build; mantivemos Oxc. Os 103
+catálogos continuam como objetos JSON legíveis no código fonte, mas viram
+listas na pasta `dist`, economizando 34.608 bytes brutos sem mudar as mensagens.
+
+Os valores gzip acima são uma medida comparativa de compressibilidade, não
+arquivos `.gz` distribuídos. O [APK já é um arquivo
+ZIP](https://developer.android.com/topic/performance/reduce-apk-size) e o
+WebView lê os arquivos locais pelos nomes normais. Incluir cópias `.gz`
+exigiria lógica de descompressão e tenderia a aumentar o pacote. O tamanho dos
+pacotes nativos desta revisão deve ser registrado a partir dos builds de CI.

@@ -1,4 +1,4 @@
 {
-  "maxRawBytes": 581212,
-  "note": "First checked build on 2026-09-24, including 104 languages, default theme and bundled license notices. Growth above 5% needs a measured baseline review."
+  "maxRawBytes": 564791,
+  "note": "Checked build on 2026-09-24 with standard, compact and 3D-only views plus packed locale catalogs. Growth above 5% needs a measured baseline review."
 }

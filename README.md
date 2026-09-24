@@ -4,8 +4,11 @@ Rolador de dados 3D offline, com interface pequena e foco em celular. Toque nos
 dados no modo **Pool** para montar uma pilha mista (`2d6+d20`) ou alterne para
 **Notação** e digite uma fórmula genérica do Dicecore, incluindo modificadores
 e pools de sucessos. O resultado compacto abre os detalhes completos ao toque.
-O resultado textual
-vem do Dicecore; a cena 3D apenas apresenta os valores. A cena mostra até 24
+O menu no canto da cena oferece as exibições **Padrão**, **Compacto** e
+**Só 3D**. No modo compacto, o lápis abre a edição; no modo Só 3D, toque na
+cena para rolar novamente e use o menu ou Escape para voltar.
+
+O resultado textual vem do Dicecore; a cena 3D apenas apresenta os valores. A cena mostra até 24
 corpos visuais, e o texto continua completo quando a fórmula ultrapassa o
 limite ou o WebGL não está disponível.
 
@@ -57,6 +60,8 @@ pacotes de teste e relatórios de tamanho em cada push para `main`.
 `npm run build:web` mostra bytes de JavaScript, CSS, idiomas e assets e falha
 quando o total web supera a referência de `size-baseline.json` em mais de 5%.
 `node scripts/measure.mjs --output web-size.json` detalha cada arquivo.
+O build minifica JS e CSS e transforma os 103 catálogos traduzidos em listas
+compactas. Os arquivos fonte dos idiomas continuam legíveis para edição.
 O 3D começa a preparar depois do primeiro quadro e não deve animar em repouso.
 Ao ir para segundo plano, a cena é descartada e reconstruída no retorno.
 Consulte `docs/PERFORMANCE.md` para medições no aparelho.

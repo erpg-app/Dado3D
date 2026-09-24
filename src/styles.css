@@ -91,6 +91,12 @@ button:focus-visible, input:focus-visible, select:focus-visible, summary:focus-v
   background: var(--panel);
   border: 1px solid var(--line);
 }
+.view-control { position: absolute; z-index: 5; top: max(12px, env(safe-area-inset-top)); inset-inline-start: max(12px, env(safe-area-inset-left)); }
+.view-trigger { list-style: none; background: var(--panel); border: 1px solid var(--line); }
+.view-trigger::-webkit-details-marker { display: none; }
+.view-options { position: absolute; top: 48px; inset-inline-start: 0; width: 150px; padding: 4px; display: flex; flex-direction: column; gap: 2px; border: 1px solid var(--line); border-radius: 12px; background: var(--panel); box-shadow: 0 12px 30px #0005; }
+.view-options button { min-height: 38px; padding: 0 10px; border: 0; border-radius: 8px; background: transparent; color: var(--text); text-align: start; font-size: 13px; }
+.view-options button:hover, .view-options button[aria-pressed=true] { background: var(--panel-raised); }
 .stage-placeholder {
   position: absolute;
   inset: 0;
@@ -192,6 +198,9 @@ button:focus-visible, input:focus-visible, select:focus-visible, summary:focus-v
 .roll-button { width: 100%; min-height: 48px; padding: 0 20px; display: flex; align-items: center; justify-content: center; gap: 9px; border: 0; border-radius: 12px; background: var(--accent); color: #101216; font-size: 14px; font-weight: 800; }
 .roll-button:hover:not(:disabled) { filter: brightness(1.08); }
 .roll-button svg { width: 18px; height: 18px; }
+.compact-edit { display: none; width: 44px; height: 44px; place-items: center; border: 1px solid var(--line); border-radius: 12px; background: var(--panel); color: var(--text); }
+.compact-edit svg { width: 19px; height: 19px; }
+.compact-edit:hover { background: var(--panel-raised); }
 
 .settings-dialog { width: min(420px, calc(100vw - 32px)); max-height: calc(100dvh - 32px); padding: 0; border: 1px solid var(--line); border-radius: 20px; background: var(--panel); color: var(--text); box-shadow: 0 25px 90px #0007; }
 .settings-dialog::backdrop { background: #050608b3; }
@@ -219,6 +228,26 @@ button:focus-visible, input:focus-visible, select:focus-visible, summary:focus-v
   .stage { min-height: 170px; }
   .control-panel { max-height: calc(100dvh - 170px); }
 }
+
+.app-shell[data-view=compact] .main-layout { display: flex; }
+.app-shell[data-view=compact] .stage { flex: 1 1 auto; width: 100%; height: auto; min-height: 0; border-right: 0; border-bottom: 1px solid var(--line); }
+.app-shell[data-view=compact] .control-panel { flex: 0 0 auto; width: 100%; max-height: 45dvh; padding: 8px max(10px, env(safe-area-inset-right)) max(10px, env(safe-area-inset-bottom)) max(10px, env(safe-area-inset-left)); justify-content: flex-start; gap: 6px; }
+.app-shell[data-view=compact] .result-summary { min-height: 42px; padding: 5px 10px; }
+.app-shell[data-view=compact] .result-main { font-size: 22px; }
+.app-shell[data-view=compact] .composer { display: grid; grid-template-columns: 44px minmax(0, 1fr); gap: 6px; }
+.app-shell[data-view=compact] .input-switch,
+.app-shell[data-view=compact] .mode-panel { display: none !important; }
+.app-shell[data-view=compact] .compact-edit { display: grid; }
+.app-shell[data-view=compact] .roll-button { min-height: 44px; }
+
+.app-shell[data-view=focus] .main-layout { display: flex; }
+.app-shell[data-view=focus] .stage { flex: 1 1 auto; width: 100%; height: 100%; min-height: 0; border: 0; cursor: pointer; }
+.app-shell[data-view=focus] .control-panel,
+.app-shell[data-view=focus] .stage-settings,
+.app-shell[data-view=focus] .stage-status { display: none !important; }
+.app-shell[data-view=focus] .view-trigger { opacity: .68; }
+.app-shell[data-view=focus] .view-trigger:hover,
+.app-shell[data-view=focus] .view-control[open] .view-trigger { opacity: 1; }
 
 @media (prefers-reduced-motion: reduce) {
   *, *:before, *:after { scroll-behavior: auto !important; transition-duration: 0s !important; animation-duration: 0s !important; }
