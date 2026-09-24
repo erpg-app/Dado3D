@@ -203,6 +203,7 @@ function disposeViewer(): void {
   viewer?.dispose()
   viewer = null
   viewerReady = null
+  stagePlaceholder.hidden = false
   showStatus('')
 }
 

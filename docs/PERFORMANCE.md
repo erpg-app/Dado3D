@@ -42,6 +42,7 @@ substituem medidas em dispositivo real.
 | Cálculo de `2d6+d20` | 9 ms |
 | Primeira rolagem 3D, do toque ao fim | 3.576 ms |
 | PSS em repouso após rolagem | 123.335 KiB |
+| Código instalado e dados privados após rolagem, `du` | 8.588 KiB |
 | CPU em repouso | 0,0% na amostra de `top` |
 | CPU durante rolagem | 103% na amostra de `top` |
 | Quadros solicitados em 2 s de repouso | 0 |
@@ -49,10 +50,12 @@ substituem medidas em dispositivo real.
 Medição em emulador Pixel 10 Pro XL com Android 17, WebView e imagem de sistema
 do host em 24/09/2026. O primeiro `am start -W` após iniciar o emulador levou
 7.085 ms, incluindo o custo de abertura da Activity nesse ambiente. O PSS foi
-medido para o processo do app; não é o consumo total do sistema/WebView. O
-espaço instalado total e o comportamento em aparelho físico ainda precisam ser
-medidos. Estes números são uma referência local, não metas nem promessa de
-desempenho em outros dispositivos.
+medido para o processo do app; não é o consumo total do sistema/WebView. A
+medida de armazenamento soma 3.660 KiB no diretório de código e 4.928 KiB no
+diretório privado, após uma rolagem; não inclui dados compartilhados do WebView.
+O espaço exibido nas configurações do Android e o comportamento em aparelho
+físico ainda precisam ser medidos. Estes números são uma referência local, não
+metas nem promessa de desempenho em outros dispositivos.
 
 Com Wi-Fi e dados móveis desativados no emulador, o app abriu em
 `https://localhost`, carregou os assets 3D locais e completou `2d6+d20`.
