@@ -72,18 +72,18 @@ necessária distribuição portátil.
 
 | Medida | Referência inicial | Build com modos de exibição e idiomas compactados |
 |---|---:|---:|
-| Conteúdo web, bruto | 581.212 bytes | 554.911 bytes |
-| Conteúdo web, gzip por arquivo | 259.908 bytes | 245.867 bytes |
-| JavaScript minificado, bruto | — | 214.040 bytes |
+| Conteúdo web, bruto | 581.212 bytes | 551.772 bytes |
+| Conteúdo web, gzip por arquivo | 259.908 bytes | 245.031 bytes |
+| JavaScript minificado, bruto | — | 214.002 bytes |
 | CSS minificado, bruto | — | 12.502 bytes |
-| Catálogos, bruto | — | 94.065 bytes |
+| Catálogos, bruto | — | 90.964 bytes |
 
 O Vite 8 já usa [Oxc para minificar JavaScript e Lightning CSS para
 CSS](https://vite.dev/config/build-options.html). Neste build, substituir Oxc
 por Terser **aumentou** os dois arquivos JavaScript de 214.198 para cerca de
 217.250 bytes, além de aumentar o tempo de build; mantivemos Oxc. Os 103
 catálogos continuam como objetos JSON legíveis no código fonte, mas viram
-listas na pasta `dist`, economizando 33.578 bytes brutos sem mudar as mensagens.
+listas na pasta `dist`, economizando 32.548 bytes brutos sem mudar as mensagens.
 
 A cena não corta mais as rolagens acima de 24 corpos. Para pilhas maiores, o
 renderizador faz um arremesso físico único com todos os dados resolvidos pelo

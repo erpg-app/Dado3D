@@ -313,12 +313,12 @@ async function roll(): Promise<void> {
     showStatus(message('no3d'))
     return
   }
-  showStatus(viewer ? message('rolling') : message('preparing'))
+  showStatus(viewer ? '' : message('preparing'))
   try {
     const prepared = viewerReady ? await viewerReady : await prewarmViewer()
     if (current !== activeRoll) return
     stagePlaceholder.hidden = true
-    showStatus(message('rolling'))
+    showStatus('')
     const presentation = { id: `roll-${current}`, seed: `${Date.now()}-${Math.random()}` }
     if (result.dice.length > timelineThreshold) {
       // Present one physical throw. Replaying each journal event in a large pool
