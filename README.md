@@ -1,8 +1,10 @@
 # Dado3D
 
 Rolador de dados 3D offline, com interface pequena e foco em celular. Toque nos
-dados para montar uma pilha mista (`2d6+d20`) ou digite uma notação genérica
-do Dicecore, incluindo modificadores e pools de sucessos. O resultado textual
+dados no modo **Pool** para montar uma pilha mista (`2d6+d20`) ou alterne para
+**Notação** e digite uma fórmula genérica do Dicecore, incluindo modificadores
+e pools de sucessos. O resultado compacto abre os detalhes completos ao toque.
+O resultado textual
 vem do Dicecore; a cena 3D apenas apresenta os valores. A cena mostra até 24
 corpos visuais, e o texto continua completo quando a fórmula ultrapassa o
 limite ou o WebGL não está disponível.

@@ -10,6 +10,7 @@ import { applyMessages, languageCode, languageOptions, matchLanguage, message, s
 type Viewer = import('@erpg/dice3dview').DiceResultViewer
 type Theme = 'dark' | 'light'
 type Color = 'violet' | 'blue' | 'mint' | 'amber'
+type InputMode = 'pool' | 'notation'
 
 const colors: Record<Color, string> = {
   violet: '#a48bff', blue: '#67a7ff', mint: '#64d6ac', amber: '#f2b76b',
@@ -42,11 +43,17 @@ const clearButton = find<HTMLButtonElement>('#clear')
 const errorNode = find<HTMLElement>('#input-error')
 const stageStatus = find<HTMLElement>('#stage-status')
 const stagePlaceholder = find<HTMLElement>('#stage-placeholder')
+const stageHint = find<HTMLElement>('#stage-hint')
+const resultCard = find<HTMLDetailsElement>('#result-card')
 const resultMain = find<HTMLElement>('#result-main')
 const resultDetail = find<HTMLElement>('#result-detail')
 const resultNotation = find<HTMLElement>('#result-notation')
 const stackSummary = find<HTMLElement>('#stack-summary')
 const stackChips = find<HTMLElement>('#stack-chips')
+const poolExpression = find<HTMLElement>('#pool-expression')
+const poolPanel = find<HTMLElement>('#pool-panel')
+const notationPanel = find<HTMLElement>('#notation-panel')
+const poolModeButton = find<HTMLButtonElement>('[data-mode-choice="pool"]')
 const settings = find<HTMLDialogElement>('#settings-dialog')
 const languageSelect = find<HTMLSelectElement>('#language')
 
@@ -57,6 +64,7 @@ let viewerGeneration = 0
 let activeRoll = 0
 let theme: Theme = readStored('dado3d.theme') === 'light' ? 'light' : 'dark'
 let color: Color = isColor(readStored('dado3d.color')) ? readStored('dado3d.color') as Color : 'violet'
+let inputMode: InputMode = readStored('dado3d.mode') === 'notation' ? 'notation' : 'pool'
 
 function readStored(key: string): string | null {
   try { return localStorage.getItem(key) } catch { return null }
@@ -80,6 +88,17 @@ function showStatus(text: string): void {
   stageStatus.hidden = !text
 }
 
+function setInputMode(next: InputMode, persist = true): void {
+  inputMode = next
+  poolPanel.hidden = next !== 'pool'
+  notationPanel.hidden = next !== 'notation'
+  for (const button of document.querySelectorAll<HTMLButtonElement>('[data-mode-choice]')) {
+    button.setAttribute('aria-pressed', String(button.dataset.modeChoice === next))
+  }
+  stageHint.textContent = message(next === 'pool' ? 'tapDice' : 'noDice')
+  if (persist) store('dado3d.mode', next)
+}
+
 function applyTheme(): void {
   document.documentElement.dataset.theme = theme
   document.documentElement.style.setProperty('--accent', colors[color])
@@ -95,7 +114,6 @@ function applyTheme(): void {
 
 function applyLanguage(): void {
   applyMessages()
-  find<HTMLButtonElement>('#theme-toggle').setAttribute('aria-label', `${message('theme')}: ${theme === 'dark' ? message('dark') : message('light')}`)
   find<HTMLButtonElement>('#settings-open').setAttribute('aria-label', message('settings'))
   find<HTMLElement>('#dice-palette').setAttribute('aria-label', message('addDie'))
   for (const button of document.querySelectorAll<HTMLButtonElement>('.die-button')) {
@@ -104,6 +122,7 @@ function applyLanguage(): void {
   for (const [index, button] of [...document.querySelectorAll<HTMLButtonElement>('.color-option')].entries()) {
     button.setAttribute('aria-label', `${message('diceColor')} ${index + 1}`)
   }
+  setInputMode(inputMode, false)
   renderStack()
 }
 
@@ -113,7 +132,12 @@ function renderStack(): void {
   const simple = parseSimplePool(expression)
   stackChips.replaceChildren()
   const count = simple ? [...simple.dice.values()].reduce((sum, item) => sum + item, 0) : 0
-  stackSummary.textContent = count ? `${count} ${message('countDice')}` : ''
+  stackSummary.textContent = String(count)
+  stackSummary.hidden = !count
+  poolModeButton.setAttribute('aria-label', count ? `${message('pool')}: ${count} ${message('countDice')}` : message('pool'))
+  poolExpression.textContent = expression
+  poolExpression.title = expression
+  poolExpression.hidden = !!simple || !expression
   for (const button of document.querySelectorAll<HTMLButtonElement>('.die-button')) {
     const sides = Number(button.dataset.die) as StandardSides
     const current = simple?.dice.get(sides) ?? 0
@@ -137,7 +161,6 @@ function renderStack(): void {
       store('dado3d.expression', notation.value)
       showError('')
       renderStack()
-      notation.focus()
     })
     chip.append(label, remove)
     stackChips.append(chip)
@@ -222,9 +245,18 @@ function renderResult(result: DiceRollResult): void {
 
 async function roll(): Promise<void> {
   const expression = notation.value.trim()
-  if (!expression) { showError(message('noDice')); notation.focus(); return }
+  if (!expression) {
+    showError(message('noDice'))
+    if (inputMode === 'notation') notation.focus()
+    return
+  }
   const inspection = engine.inspect(expression)
-  if (!inspection.isValid) { showError(message('invalid')); notation.focus(); return }
+  if (!inspection.isValid) {
+    showError(message('invalid'))
+    setInputMode('notation')
+    notation.focus()
+    return
+  }
   showError('')
   const current = ++activeRoll
   performance.mark('dado3d:roll-start')
@@ -233,6 +265,7 @@ async function roll(): Promise<void> {
   catch { showError(message('invalid')); return }
   if (current !== activeRoll) return
   renderResult(result)
+  resultCard.open = false
   store('dado3d.expression', expression)
   performance.mark('dado3d:result-ready')
   performance.measure('dado3d:calculate', 'dado3d:roll-start', 'dado3d:result-ready')
@@ -240,18 +273,21 @@ async function roll(): Promise<void> {
   if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
     viewer?.clear()
     stagePlaceholder.hidden = false
+    resultCard.open = true
     showStatus('')
     return
   }
   if (!result.dice.length || result.dice.some(die => typeof die.sides !== 'number' || !supportedSides.has(die.sides))) {
     viewer?.clear()
     stagePlaceholder.hidden = false
+    resultCard.open = true
     showStatus(message('no3d'))
     return
   }
   if (visualBodyCount(result.dice) > maxVisualBodies) {
     viewer?.clear()
     stagePlaceholder.hidden = false
+    resultCard.open = true
     showStatus(message('tooMany'))
     return
   }
@@ -277,12 +313,14 @@ async function roll(): Promise<void> {
   } catch {
     if (current !== activeRoll) return
     stagePlaceholder.hidden = false
+    resultCard.open = true
     showStatus(message('graphicsError'))
   }
 }
 
 notation.value = readStored('dado3d.expression')?.slice(0, 300) ?? ''
 applyTheme()
+setInputMode(inputMode, false)
 renderStack()
 
 notation.addEventListener('input', () => {
@@ -299,6 +337,12 @@ clearButton.addEventListener('click', () => {
   renderStack()
   notation.focus()
 })
+for (const button of document.querySelectorAll<HTMLButtonElement>('[data-mode-choice]')) {
+  button.addEventListener('click', () => {
+    setInputMode(button.dataset.modeChoice as InputMode)
+    if (inputMode === 'notation') notation.focus()
+  })
+}
 for (const button of document.querySelectorAll<HTMLButtonElement>('.die-button')) {
   button.addEventListener('click', () => {
     const sides = Number(button.dataset.die) as StandardSides
@@ -311,12 +355,6 @@ for (const button of document.querySelectorAll<HTMLButtonElement>('.die-button')
   })
 }
 
-find<HTMLButtonElement>('#theme-toggle').addEventListener('click', () => {
-  theme = theme === 'dark' ? 'light' : 'dark'
-  store('dado3d.theme', theme)
-  applyTheme()
-  applyLanguage()
-})
 find<HTMLButtonElement>('#settings-open').addEventListener('click', () => settings.showModal())
 for (const button of document.querySelectorAll<HTMLButtonElement>('[data-theme-choice]')) {
   button.addEventListener('click', () => {

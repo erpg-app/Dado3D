@@ -10,68 +10,60 @@
   </head>
   <body>
     <div class="app-shell" id="app">
-      <header class="topbar">
-        <div class="brand" aria-label="Dado3D">
-          <svg class="brand-mark" viewBox="0 0 32 32" fill="none" aria-hidden="true">
-            <path d="M16 2 28 9v14L16 30 4 23V9L16 2Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" />
-            <path d="m4.5 9.5 11.5 7 11.5-7M16 16.5V29" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" />
-          </svg>
-          <span>Dado<span class="brand-accent">3D</span></span>
-        </div>
-        <div class="top-actions">
-          <button class="icon-button" id="theme-toggle" type="button" aria-label="Alternar tema" title="Alternar tema">
-            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M20.4 15.7A8.5 8.5 0 0 1 8.3 3.6 8.5 8.5 0 1 0 20.4 15.7Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" /></svg>
-          </button>
-          <button class="icon-button" id="settings-open" type="button" aria-label="Preferências" title="Preferências">
-            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z" stroke="currentColor" stroke-width="1.8"/><path d="m19.2 13.9 1.1.9-1.5 2.6-1.4-.5a8 8 0 0 1-1.5.9l-.3 1.5h-3l-.3-1.5a8 8 0 0 1-1.6-.9l-1.4.5-1.5-2.6 1.1-.9a8 8 0 0 1 0-1.8l-1.1-.9 1.5-2.6 1.4.5a8 8 0 0 1 1.6-.9l.3-1.5h3l.3 1.5a8 8 0 0 1 1.5.9l1.4-.5 1.5 2.6-1.1.9a8 8 0 0 1 0 1.8Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" transform="translate(-1 -1)"/></svg>
-          </button>
-        </div>
-      </header>
-
       <main class="main-layout">
         <section class="stage" aria-label="Mesa de dados" id="stage">
           <div class="stage-grid" aria-hidden="true"></div>
           <div id="dice-stage" class="dice-stage" aria-hidden="true"></div>
+          <button class="icon-button stage-settings" id="settings-open" type="button" aria-label="Preferências" title="Preferências">
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z" stroke="currentColor" stroke-width="1.8"/><path d="m19.2 13.9 1.1.9-1.5 2.6-1.4-.5a8 8 0 0 1-1.5.9l-.3 1.5h-3l-.3-1.5a8 8 0 0 1-1.6-.9l-1.4.5-1.5-2.6 1.1-.9a8 8 0 0 1 0-1.8l-1.1-.9 1.5-2.6 1.4.5a8 8 0 0 1 1.6-.9l.3-1.5h3l.3 1.5a8 8 0 0 1 1.5.9l1.4-.5 1.5 2.6-1.1.9a8 8 0 0 1 0 1.8Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" transform="translate(-1 -1)"/></svg>
+          </button>
           <div class="stage-placeholder" id="stage-placeholder">
             <div class="placeholder-die" aria-hidden="true">20</div>
-            <p data-i18n="tapDice">Toque nos dados para montar sua rolagem</p>
+            <p id="stage-hint" data-i18n="tapDice">Toque nos dados para montar sua rolagem</p>
           </div>
           <div class="stage-status" id="stage-status" role="status" aria-live="polite" hidden></div>
         </section>
 
         <section class="control-panel" aria-label="Controles de rolagem">
-          <div class="result-card" id="result-card" aria-live="polite" aria-atomic="true">
-            <div class="result-heading">
+          <details class="result-card" id="result-card">
+            <summary class="result-summary">
               <span class="eyebrow" data-i18n="result">RESULTADO</span>
-              <span class="result-notation" id="result-notation"></span>
+              <strong class="result-main" id="result-main" aria-live="polite">—</strong>
+              <svg class="result-chevron" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m6 9 6 6 6-6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" /></svg>
+            </summary>
+            <div class="result-breakdown">
+              <div class="result-notation" id="result-notation"></div>
+              <div class="result-detail" id="result-detail"></div>
             </div>
-            <div class="result-main" id="result-main">—</div>
-            <div class="result-detail" id="result-detail"></div>
-          </div>
+          </details>
 
           <div class="composer">
-            <div class="field-heading">
-              <label for="notation" data-i18n="expression">Notação</label>
-              <button class="text-button" id="clear" type="button" data-i18n="clear">Limpar</button>
+            <div class="input-switch" role="group">
+              <button class="mode-button" type="button" data-mode-choice="pool" aria-pressed="true"><span data-i18n="pool">Pool</span><small id="stack-summary" class="stack-summary" hidden></small></button>
+              <button class="mode-button" type="button" data-mode-choice="notation" aria-pressed="false" data-i18n="expression">Notação</button>
             </div>
-            <input id="notation" class="notation-input" type="text" inputmode="text" dir="ltr" maxlength="300" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="2d6+d20" aria-describedby="input-error" />
+            <div class="mode-panel" id="notation-panel" hidden>
+              <label class="sr-only" for="notation" data-i18n="expression">Notação</label>
+              <div class="notation-row">
+                <input id="notation" class="notation-input" type="text" inputmode="text" dir="ltr" maxlength="300" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="2d6+d20" aria-describedby="input-error" />
+                <button class="text-button" id="clear" type="button" data-i18n="clear">Limpar</button>
+              </div>
+            </div>
+            <div class="mode-panel" id="pool-panel">
+              <div class="dice-palette" id="dice-palette" role="group" aria-label="Adicionar dados">
+                <button class="die-button" type="button" data-die="4"><span class="die-shape shape-d4">4</span><span>d4</span><small class="die-count" hidden></small></button>
+                <button class="die-button" type="button" data-die="6"><span class="die-shape shape-d6">6</span><span>d6</span><small class="die-count" hidden></small></button>
+                <button class="die-button" type="button" data-die="8"><span class="die-shape shape-d8">8</span><span>d8</span><small class="die-count" hidden></small></button>
+                <button class="die-button" type="button" data-die="10"><span class="die-shape shape-d10">10</span><span>d10</span><small class="die-count" hidden></small></button>
+                <button class="die-button" type="button" data-die="12"><span class="die-shape shape-d12">12</span><span>d12</span><small class="die-count" hidden></small></button>
+                <button class="die-button" type="button" data-die="20"><span class="die-shape shape-d20">20</span><span>d20</span><small class="die-count" hidden></small></button>
+                <button class="die-button" type="button" data-die="100"><span class="die-shape shape-d100">%</span><span>d100</span><small class="die-count" hidden></small></button>
+                <button class="die-button" type="button" data-die="2"><span class="die-shape shape-d2">2</span><span>d2</span><small class="die-count" hidden></small></button>
+              </div>
+              <div class="stack-chips" id="stack-chips" aria-live="polite"></div>
+              <div class="pool-expression" id="pool-expression" dir="ltr" hidden></div>
+            </div>
             <div class="input-error" id="input-error" role="alert" hidden></div>
-
-            <div class="palette-heading">
-              <span class="eyebrow" data-i18n="dice">DADOS</span>
-              <span id="stack-summary" class="stack-summary"></span>
-            </div>
-            <div class="dice-palette" id="dice-palette" role="group" aria-label="Adicionar dados">
-              <button class="die-button" type="button" data-die="4"><span class="die-shape shape-d4">4</span><span>d4</span><small class="die-count" hidden></small></button>
-              <button class="die-button" type="button" data-die="6"><span class="die-shape shape-d6">6</span><span>d6</span><small class="die-count" hidden></small></button>
-              <button class="die-button" type="button" data-die="8"><span class="die-shape shape-d8">8</span><span>d8</span><small class="die-count" hidden></small></button>
-              <button class="die-button" type="button" data-die="10"><span class="die-shape shape-d10">10</span><span>d10</span><small class="die-count" hidden></small></button>
-              <button class="die-button" type="button" data-die="12"><span class="die-shape shape-d12">12</span><span>d12</span><small class="die-count" hidden></small></button>
-              <button class="die-button" type="button" data-die="20"><span class="die-shape shape-d20">20</span><span>d20</span><small class="die-count" hidden></small></button>
-              <button class="die-button" type="button" data-die="100"><span class="die-shape shape-d100">%</span><span>d100</span><small class="die-count" hidden></small></button>
-              <button class="die-button" type="button" data-die="2"><span class="die-shape shape-d2">2</span><span>d2</span><small class="die-count" hidden></small></button>
-            </div>
-            <div class="stack-chips" id="stack-chips" aria-live="polite"></div>
             <button class="roll-button" id="roll" type="button" disabled>
               <span data-i18n="roll">Rolar dados</span>
               <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 12h14m-5-5 5 5-5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg>
