@@ -54,6 +54,9 @@ espaço instalado total e o comportamento em aparelho físico ainda precisam ser
 medidos. Estes números são uma referência local, não metas nem promessa de
 desempenho em outros dispositivos.
 
+Com Wi-Fi e dados móveis desativados no emulador, o app abriu em
+`https://localhost`, carregou os assets 3D locais e completou `2d6+d20`.
+
 O AppImage Linux mediu 78.785.016 bytes no primeiro build porque leva mais
 dependências consigo. Por priorizar tamanho, o CI publica o `.deb`, que usa o
 WebKitGTK do sistema; o AppImage pode ser gerado manualmente quando for
