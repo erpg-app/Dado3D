@@ -76,13 +76,13 @@ jobs:
         run: |
           APP=$(find platforms/ios/build -name '*.app' -type d -print -quit)
           test -n "$APP"
-          ditto -c -k --sequesterRsrc --keepParent "$APP" platforms/ios/build/emulator/Dado3D-ios-simulator.zip
-      - run: node scripts/measure-native.mjs ios platforms/ios/build/emulator native-size-ios.json
+          ditto -c -k --sequesterRsrc --keepParent "$APP" platforms/ios/build/Dado3D-ios-simulator.zip
+      - run: node scripts/measure-native.mjs ios platforms/ios/build native-size-ios.json
       - uses: actions/upload-artifact@v4
         with:
           name: dado3d-ios-simulator
           path: |
-            platforms/ios/build/emulator/Dado3D-ios-simulator.zip
+            platforms/ios/build/Dado3D-ios-simulator.zip
             native-size-ios.json
 
   windows:

@@ -12,6 +12,7 @@ src-tauri/icons/Square*Logo.png
 src-tauri/icons/StoreLogo.png
 src-tauri/icons/64x64.png
 src-tauri/icons/icon.icns
+res/ios/1024x1024.png
 .vite/
 *-preview.png
 web-size.json
