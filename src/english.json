@@ -21,7 +21,6 @@
   "addDie": "Add die",
   "removeDie": "Remove die",
   "countDice": "dice in stack",
-  "preparing": "Preparing 3D…",
   "invalid": "Invalid notation",
   "noDice": "Choose a die or enter notation",
   "no3d": "This roll has no compatible 3D dice. The result is shown below.",

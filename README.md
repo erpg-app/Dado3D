@@ -3,10 +3,11 @@
 Rolador de dados 3D offline, com interface pequena e foco em celular. Toque nos
 dados no modo **Pool** para montar uma pilha mista (`2d6+d20`) ou alterne para
 **Notação** e digite uma fórmula genérica do Dicecore, incluindo modificadores
-e pools de sucessos. O resultado compacto abre os detalhes completos ao toque.
+e pools de sucessos. Depois da rolagem, a cena ocupa a tela com o resultado
+inline (`2d6+d20 = 23`); toque no resultado para ver os detalhes completos.
 O menu no canto da cena oferece as exibições **Padrão**, **Compacto** e
-**Só 3D**. No modo compacto, o lápis abre a edição; no modo Só 3D, toque na
-cena para rolar novamente e use o menu ou Escape para voltar.
+**Só 3D** para voltar à edição. No modo compacto, o lápis abre a edição; no
+modo Só 3D, toque na cena para rolar novamente e use o menu ou Escape para voltar.
 
 O resultado textual vem do Dicecore; a cena 3D apresenta todos os dados
 compatíveis que a fórmula gerar, mesmo em rolagens grandes. O texto continua

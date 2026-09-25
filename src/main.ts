@@ -38,13 +38,13 @@ const compactEdit = find<HTMLButtonElement>('#compact-edit')
 const viewControl = find<HTMLDetailsElement>('#view-control')
 const viewTrigger = find<HTMLElement>('#view-open')
 const errorNode = find<HTMLElement>('#input-error')
-const stageStatus = find<HTMLElement>('#stage-status')
 const stagePlaceholder = find<HTMLElement>('#stage-placeholder')
 const stageHint = find<HTMLElement>('#stage-hint')
-const resultCard = find<HTMLDetailsElement>('#result-card')
+const resultPanel = find<HTMLDetailsElement>('#stage-result')
 const resultMain = find<HTMLElement>('#result-main')
 const resultDetail = find<HTMLElement>('#result-detail')
 const resultNotation = find<HTMLElement>('#result-notation')
+const resultNotice = find<HTMLElement>('#result-notice')
 const stackSummary = find<HTMLElement>('#stack-summary')
 const stackChips = find<HTMLElement>('#stack-chips')
 const poolExpression = find<HTMLElement>('#pool-expression')
@@ -82,11 +82,6 @@ function showError(text: string): void {
   errorNode.hidden = !text
 }
 
-function showStatus(text: string): void {
-  stageStatus.textContent = text
-  stageStatus.hidden = !text
-}
-
 function setInputMode(next: InputMode, persist = true): void {
   inputMode = next
   poolPanel.hidden = next !== 'pool'
@@ -106,7 +101,7 @@ function setViewMode(next: ViewMode, persist = true): void {
   for (const button of document.querySelectorAll<HTMLButtonElement>('[data-view-choice]')) {
     button.setAttribute('aria-pressed', String(button.dataset.viewChoice === next))
   }
-  if (next !== 'standard') resultCard.open = false
+  resultPanel.open = false
   stage.title = next === 'focus' ? message('roll') : ''
   if (next === 'focus') {
     stage.tabIndex = 0
@@ -117,9 +112,11 @@ function setViewMode(next: ViewMode, persist = true): void {
   }
 }
 
-function revealTextResult(): void {
-  if (viewMode === 'focus') setViewMode('compact', false)
-  resultCard.open = true
+function revealTextResult(notice = ''): void {
+  stagePlaceholder.hidden = true
+  resultNotice.textContent = notice
+  resultNotice.hidden = !notice
+  resultPanel.open = true
 }
 
 function applyTheme(): void {
@@ -254,11 +251,14 @@ function disposeViewer(): void {
   viewer = null
   viewerReady = null
   stagePlaceholder.hidden = false
-  showStatus('')
 }
 
 function renderResult(result: DiceRollResult): void {
   const number = new Intl.NumberFormat(languageCode())
+  resultPanel.hidden = false
+  resultPanel.open = false
+  resultNotice.hidden = true
+  resultNotice.textContent = ''
   resultNotation.textContent = result.notation
   resultMain.textContent = result.rolls.length > 1
     ? result.rolls.map(item => number.format(item.total)).join(' · ')
@@ -294,31 +294,25 @@ async function roll(): Promise<void> {
   catch { showError(message('invalid')); return }
   if (current !== activeRoll) return
   renderResult(result)
-  resultCard.open = false
+  setViewMode('focus')
   store('dado3d.expression', expression)
   performance.mark('dado3d:result-ready')
   performance.measure('dado3d:calculate', 'dado3d:roll-start', 'dado3d:result-ready')
 
   if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
     viewer?.clear()
-    stagePlaceholder.hidden = false
     revealTextResult()
-    showStatus('')
     return
   }
   if (!result.dice.length || result.dice.some(die => typeof die.sides !== 'number' || !supportedSides.has(die.sides))) {
     viewer?.clear()
-    stagePlaceholder.hidden = false
-    revealTextResult()
-    showStatus(message('no3d'))
+    revealTextResult(message('no3d'))
     return
   }
-  showStatus(viewer ? '' : message('preparing'))
+  stagePlaceholder.hidden = true
   try {
     const prepared = viewerReady ? await viewerReady : await prewarmViewer()
     if (current !== activeRoll) return
-    stagePlaceholder.hidden = true
-    showStatus('')
     const presentation = { id: `roll-${current}`, seed: `${Date.now()}-${Math.random()}` }
     if (result.dice.length > timelineThreshold) {
       // Present one physical throw. Replaying each journal event in a large pool
@@ -343,14 +337,11 @@ async function roll(): Promise<void> {
       })
     }
     if (current !== activeRoll) return
-    showStatus('')
     performance.mark('dado3d:roll-complete')
     performance.measure('dado3d:first-roll', 'dado3d:roll-start', 'dado3d:roll-complete')
   } catch {
     if (current !== activeRoll) return
-    stagePlaceholder.hidden = false
-    revealTextResult()
-    showStatus(message('graphicsError'))
+    revealTextResult(message('graphicsError'))
   }
 }
 
@@ -389,14 +380,15 @@ compactEdit.addEventListener('click', () => {
 })
 stage.addEventListener('click', event => {
   if (viewMode !== 'focus') return
-  if ((event.target as Element).closest('.view-control')) return
+  if ((event.target as Element).closest('.view-control, .stage-result')) return
   if (viewControl.open) { viewControl.open = false; return }
   void roll()
 })
 document.addEventListener('keydown', event => {
   if (viewMode !== 'focus') return
   if (event.key === 'Escape') {
-    if (viewControl.open) viewControl.open = false
+    if (resultPanel.open) resultPanel.open = false
+    else if (viewControl.open) viewControl.open = false
     else setViewMode(previousViewMode)
     return
   }

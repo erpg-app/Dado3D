@@ -31,22 +31,22 @@
             <div class="placeholder-die" aria-hidden="true">20</div>
             <p id="stage-hint" data-i18n="tapDice">Toque nos dados para montar sua rolagem</p>
           </div>
-          <div class="stage-status" id="stage-status" role="status" aria-live="polite" hidden></div>
+          <details class="stage-result" id="stage-result" hidden>
+            <summary class="stage-result-summary" dir="ltr">
+              <span class="sr-only" data-i18n="result">RESULTADO</span>
+              <span class="stage-result-notation" id="result-notation" dir="ltr"></span>
+              <span class="stage-result-equals" aria-hidden="true">=</span>
+              <strong class="stage-result-main" id="result-main" aria-live="polite"></strong>
+              <svg class="stage-result-chevron" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m6 9 6 6 6-6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" /></svg>
+            </summary>
+            <div class="stage-result-breakdown">
+              <div class="stage-result-notice" id="result-notice" hidden></div>
+              <div class="stage-result-detail" id="result-detail"></div>
+            </div>
+          </details>
         </section>
 
         <section class="control-panel" aria-label="Controles de rolagem">
-          <details class="result-card" id="result-card">
-            <summary class="result-summary">
-              <span class="eyebrow" data-i18n="result">RESULTADO</span>
-              <strong class="result-main" id="result-main" aria-live="polite">—</strong>
-              <svg class="result-chevron" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m6 9 6 6 6-6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" /></svg>
-            </summary>
-            <div class="result-breakdown">
-              <div class="result-notation" id="result-notation"></div>
-              <div class="result-detail" id="result-detail"></div>
-            </div>
-          </details>
-
           <div class="composer">
             <div class="input-switch" role="group">
               <button class="mode-button" type="button" data-mode-choice="pool" aria-pressed="true"><span data-i18n="pool">Pool</span><small id="stack-summary" class="stack-summary" hidden></small></button>
