@@ -1,4 +1,4 @@
-import { cp, mkdir, readFile, rm } from 'node:fs/promises'
+import { cp, mkdir, readFile, rm, writeFile } from 'node:fs/promises'
 import { dirname, join, resolve, sep } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
@@ -12,4 +12,8 @@ await readFile(join(source, 'theme.config.json'))
 await rm(target, { recursive: true, force: true })
 await mkdir(target, { recursive: true })
 for (const filename of allowed) await cp(join(source, filename), join(target, filename))
+for (const filename of ['glyph-orientation.json', 'theme.config.json']) {
+  const path = join(target, filename)
+  await writeFile(path, JSON.stringify(JSON.parse(await readFile(path, 'utf8'))))
+}
 console.log(`Copied ${allowed.length} default theme assets`)

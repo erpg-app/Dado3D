@@ -98,3 +98,18 @@ ZIP](https://developer.android.com/topic/performance/reduce-apk-size) e o
 WebView lê os arquivos locais pelos nomes normais. Incluir cópias `.gz`
 exigiria lógica de descompressão e tenderia a aumentar o pacote. O tamanho dos
 pacotes nativos desta revisão deve ser registrado a partir dos builds de CI.
+
+## Macros locais — 24/09/2026
+
+| Medida | Antes | Com macros |
+|---|---:|---:|
+| Conteúdo web, bruto | 547.500 bytes | 571.130 bytes |
+| Conteúdo web, gzip por arquivo | 243.442 bytes | 251.445 bytes |
+
+O crescimento bruto é de 4,3%, dentro do alerta de 5% do CI. As macros usam
+`localStorage`, três abas fixas e elementos HTML/CSS, sem dependências ou
+assets de execução novos. Os rótulos novos foram incluídos nos 104 idiomas. Os
+arquivos `glyph-orientation.json` e `theme.config.json` são minificados ao
+copiar o tema, sem mudar os valores. O maior custo continua no renderizador 3D
+e nos assets de malha e textura; reduzi-los exigiria comparar a aparência e o
+desempenho em dispositivos reais.

@@ -24,8 +24,8 @@
               <button type="button" data-view-choice="focus" data-i18n="only3d" aria-pressed="false">Só 3D</button>
             </div>
           </details>
-          <button class="icon-button stage-settings" id="settings-open" type="button" aria-label="Preferências" title="Preferências">
-            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z" stroke="currentColor" stroke-width="1.8"/><path d="m19.2 13.9 1.1.9-1.5 2.6-1.4-.5a8 8 0 0 1-1.5.9l-.3 1.5h-3l-.3-1.5a8 8 0 0 1-1.6-.9l-1.4.5-1.5-2.6 1.1-.9a8 8 0 0 1 0-1.8l-1.1-.9 1.5-2.6 1.4.5a8 8 0 0 1 1.6-.9l.3-1.5h3l.3 1.5a8 8 0 0 1 1.5.9l1.4-.5 1.5 2.6-1.1.9a8 8 0 0 1 0 1.8Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" transform="translate(-1 -1)"/></svg>
+          <button class="icon-button stage-settings" id="settings-open" type="button" aria-label="Preferências">
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M9.8 2.5h4.4l.55 2.14c.49.21.94.47 1.35.78l2.13-.58 2.2 3.82-1.57 1.56a8 8 0 0 1 0 1.56l1.57 1.56-2.2 3.82-2.13-.58c-.41.31-.86.57-1.35.78l-.55 2.14H9.8l-.55-2.14a7.8 7.8 0 0 1-1.35-.78l-2.13.58-2.2-3.82 1.57-1.56a8 8 0 0 1 0-1.56L3.57 8.66l2.2-3.82 2.13.58c.41-.31.86-.57 1.35-.78L9.8 2.5Z" transform="translate(0 1)" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><circle cx="12" cy="12" r="2.8" stroke="currentColor" stroke-width="1.6"/></svg>
           </button>
           <div class="stage-placeholder" id="stage-placeholder">
             <div class="placeholder-die" aria-hidden="true">20</div>
@@ -47,6 +47,10 @@
         </section>
 
         <section class="control-panel" aria-label="Controles de rolagem">
+          <div class="workspace-switch" role="group">
+            <button type="button" data-pane-choice="dice" aria-pressed="true" data-i18n="dice">DADOS</button>
+            <button type="button" data-pane-choice="macros" aria-pressed="false" data-i18n="macros">Macros</button>
+          </div>
           <div class="composer">
             <div class="input-switch" role="group">
               <button class="mode-button" type="button" data-mode-choice="pool" aria-pressed="true"><span data-i18n="pool">Pool</span><small id="stack-summary" class="stack-summary" hidden></small></button>
@@ -82,6 +86,18 @@
               <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 12h14m-5-5 5 5-5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg>
             </button>
           </div>
+          <section class="macro-panel" id="macro-panel" aria-labelledby="macros-title">
+            <div class="macro-heading">
+              <h2 id="macros-title" data-i18n="macros">Macros</h2>
+              <button class="macro-add" id="macro-add" type="button"><span aria-hidden="true">+</span> <span data-i18n="newMacro">Nova macro</span></button>
+            </div>
+            <div class="macro-tabs" id="macro-tabs" role="tablist" aria-label="Macros" data-i18n-aria="macros">
+              <button type="button" role="tab" id="macro-tab-0" data-macro-tab="0" aria-controls="macro-list" aria-selected="true">1</button>
+              <button type="button" role="tab" id="macro-tab-1" data-macro-tab="1" aria-controls="macro-list" aria-selected="false">2</button>
+              <button type="button" role="tab" id="macro-tab-2" data-macro-tab="2" aria-controls="macro-list" aria-selected="false">3</button>
+            </div>
+            <div class="macro-list" id="macro-list" role="tabpanel" aria-labelledby="macro-tab-0"></div>
+          </section>
         </section>
       </main>
     </div>
@@ -109,6 +125,15 @@
           <label class="setting-label" for="language" data-i18n="language">Idioma</label>
           <select id="language" class="language-select"></select>
         </div>
+      </form>
+    </dialog>
+    <dialog class="settings-dialog macro-dialog" id="macro-dialog" aria-labelledby="macro-dialog-title">
+      <form class="settings-content" id="macro-form">
+        <div class="settings-heading"><h2 id="macro-dialog-title" data-i18n="newMacro">Nova macro</h2><button class="icon-button" id="macro-close" type="button" aria-label="Fechar" data-i18n-aria="close">×</button></div>
+        <div class="setting-group"><label class="setting-label" for="macro-name" data-i18n="macroName">Nome</label><input class="notation-input" id="macro-name" type="text" maxlength="40" required autocomplete="off" /></div>
+        <div class="setting-group"><label class="setting-label" for="macro-notation" data-i18n="expression">Notação</label><input class="notation-input" id="macro-notation" type="text" maxlength="300" required dir="ltr" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="2d6+d20" /></div>
+        <div class="input-error" id="macro-error" role="alert" hidden></div>
+        <div class="macro-actions"><button class="macro-delete" id="macro-delete" type="button" data-i18n="deleteMacro" hidden>Excluir</button><button class="macro-save" type="submit" data-i18n="save">Salvar</button></div>
       </form>
     </dialog>
     <script type="module" src="/src/main.ts"></script>

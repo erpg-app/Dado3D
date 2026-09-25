@@ -6,6 +6,8 @@ import type { DiceTimelineEvent } from '@erpg/dice3dview'
 import { addDie, DICE_SIDES, parseSimplePool, removeDie } from './composer'
 import type { StandardSides } from './composer'
 import { applyMessages, languageCode, languageOptions, matchLanguage, message, setLanguage } from './i18n'
+import { parseMacros } from './macros'
+import type { Macro } from './macros'
 
 type Viewer = import('@erpg/dice3dview').DiceResultViewer
 type Theme = 'dark' | 'light'
@@ -53,6 +55,14 @@ const notationPanel = find<HTMLElement>('#notation-panel')
 const poolModeButton = find<HTMLButtonElement>('[data-mode-choice="pool"]')
 const settings = find<HTMLDialogElement>('#settings-dialog')
 const languageSelect = find<HTMLSelectElement>('#language')
+const macroList = find<HTMLElement>('#macro-list')
+const macroDialog = find<HTMLDialogElement>('#macro-dialog')
+const macroForm = find<HTMLFormElement>('#macro-form')
+const macroDialogTitle = find<HTMLElement>('#macro-dialog-title')
+const macroName = find<HTMLInputElement>('#macro-name')
+const macroNotation = find<HTMLInputElement>('#macro-notation')
+const macroError = find<HTMLElement>('#macro-error')
+const macroDelete = find<HTMLButtonElement>('#macro-delete')
 
 let viewer: Viewer | null = null
 let viewerReady: Promise<Viewer> | null = null
@@ -64,13 +74,19 @@ let color: Color = isColor(readStored('dado3d.color')) ? readStored('dado3d.colo
 let inputMode: InputMode = readStored('dado3d.mode') === 'notation' ? 'notation' : 'pool'
 let viewMode: ViewMode = readStored('dado3d.viewMode') === 'compact' ? 'compact' : 'standard'
 let previousViewMode: 'standard' | 'compact' = viewMode
+let macros = parseMacros(readStored('dado3d.macros.v1'))
+const storedMacroTab = Number(readStored('dado3d.macroTab'))
+let activeMacroTab = Number.isInteger(storedMacroTab) && storedMacroTab >= 0 && storedMacroTab <= 2 ? storedMacroTab : 0
+let editingMacroId: string | null = null
+let macroDeleteArmed = false
+let lastRollExpression: string | null = null
 
 function readStored(key: string): string | null {
   try { return localStorage.getItem(key) } catch { return null }
 }
 
-function store(key: string, value: string): void {
-  try { localStorage.setItem(key, value) } catch { /* App works without storage. */ }
+function store(key: string, value: string): boolean {
+  try { localStorage.setItem(key, value); return true } catch { return false }
 }
 
 function isColor(value: string | null): value is Color {
@@ -80,6 +96,73 @@ function isColor(value: string | null): value is Color {
 function showError(text: string): void {
   errorNode.textContent = text
   errorNode.hidden = !text
+}
+
+function setActivePane(next: 'dice' | 'macros'): void {
+  appShell.dataset.pane = next
+  for (const button of document.querySelectorAll<HTMLButtonElement>('[data-pane-choice]')) {
+    button.setAttribute('aria-pressed', String(button.dataset.paneChoice === next))
+  }
+}
+
+function renderMacros(): void {
+  macroList.replaceChildren()
+  const visible = macros.filter(macro => macro.tab === activeMacroTab)
+  macroList.setAttribute('aria-labelledby', `macro-tab-${activeMacroTab}`)
+  for (const tab of document.querySelectorAll<HTMLButtonElement>('[data-macro-tab]')) {
+    const selected = Number(tab.dataset.macroTab) === activeMacroTab
+    tab.setAttribute('aria-selected', String(selected))
+    tab.setAttribute('aria-label', `${message('macros')} ${Number(tab.dataset.macroTab) + 1}`)
+  }
+  for (const macro of visible) {
+    const row = document.createElement('div')
+    row.className = 'macro-row'
+    const run = document.createElement('button')
+    run.type = 'button'
+    run.className = 'macro-run'
+    run.setAttribute('aria-label', `${message('roll')}: ${macro.name}, ${macro.notation}`)
+    const name = document.createElement('strong')
+    name.textContent = macro.name
+    const formula = document.createElement('small')
+    formula.dir = 'ltr'
+    formula.textContent = macro.notation
+    run.append(name, formula)
+    run.addEventListener('click', () => void roll(macro.notation))
+    const edit = document.createElement('button')
+    edit.type = 'button'
+    edit.className = 'macro-edit'
+    edit.textContent = '⋯'
+    edit.setAttribute('aria-label', `${message('editMacro')}: ${macro.name}`)
+    edit.addEventListener('click', () => openMacroEditor(macro))
+    row.append(run, edit)
+    macroList.append(row)
+  }
+}
+
+function openMacroEditor(macro?: Macro): void {
+  editingMacroId = macro?.id ?? null
+  macroDeleteArmed = false
+  macroDialogTitle.textContent = message(macro ? 'editMacro' : 'newMacro')
+  macroName.value = macro?.name ?? ''
+  macroNotation.value = macro?.notation ?? notation.value.trim()
+  macroDelete.hidden = !macro
+  macroDelete.textContent = message('deleteMacro')
+  macroError.hidden = true
+  macroError.textContent = ''
+  macroDialog.showModal()
+  macroName.focus()
+}
+
+function persistMacros(next: Macro[]): boolean {
+  if (!store('dado3d.macros.v1', JSON.stringify(next))) {
+    macroError.textContent = message('saveError')
+    macroError.hidden = false
+    return false
+  }
+  macros = next
+  renderMacros()
+  macroDialog.close()
+  return true
 }
 
 function setInputMode(next: InputMode, persist = true): void {
@@ -147,6 +230,8 @@ function applyLanguage(): void {
   setInputMode(inputMode, false)
   setViewMode(viewMode, false)
   renderStack()
+  renderMacros()
+  if (macroDialog.open) macroDialogTitle.textContent = message(editingMacroId ? 'editMacro' : 'newMacro')
 }
 
 function renderStack(): void {
@@ -270,8 +355,8 @@ function renderResult(result: DiceRollResult): void {
   resultDetail.textContent = result.output + suffix
 }
 
-async function roll(): Promise<void> {
-  const expression = notation.value.trim()
+async function roll(override?: string): Promise<void> {
+  const expression = (override ?? notation.value).trim()
   if (!expression) {
     if (viewMode === 'focus') setViewMode(previousViewMode)
     showError(message('noDice'))
@@ -294,8 +379,9 @@ async function roll(): Promise<void> {
   catch { showError(message('invalid')); return }
   if (current !== activeRoll) return
   renderResult(result)
+  lastRollExpression = expression
   setViewMode('focus')
-  store('dado3d.expression', expression)
+  if (override === undefined) store('dado3d.expression', expression)
   performance.mark('dado3d:result-ready')
   performance.measure('dado3d:calculate', 'dado3d:roll-start', 'dado3d:result-ready')
 
@@ -350,6 +436,8 @@ applyTheme()
 setInputMode(inputMode, false)
 setViewMode(viewMode, false)
 renderStack()
+setActivePane('dice')
+renderMacros()
 
 notation.addEventListener('input', () => {
   store('dado3d.expression', notation.value)
@@ -382,7 +470,7 @@ stage.addEventListener('click', event => {
   if (viewMode !== 'focus') return
   if ((event.target as Element).closest('.view-control, .stage-result')) return
   if (viewControl.open) { viewControl.open = false; return }
-  void roll()
+  void roll(lastRollExpression ?? undefined)
 })
 document.addEventListener('keydown', event => {
   if (viewMode !== 'focus') return
@@ -395,7 +483,51 @@ document.addEventListener('keydown', event => {
   if (event.key !== 'Enter' && event.key !== ' ') return
   if (event.target instanceof Element && event.target.closest('button, summary, input, select, textarea')) return
   event.preventDefault()
-  void roll()
+  void roll(lastRollExpression ?? undefined)
+})
+for (const button of document.querySelectorAll<HTMLButtonElement>('[data-pane-choice]')) {
+  button.addEventListener('click', () => setActivePane(button.dataset.paneChoice as 'dice' | 'macros'))
+}
+for (const button of document.querySelectorAll<HTMLButtonElement>('[data-macro-tab]')) {
+  button.addEventListener('click', () => {
+    activeMacroTab = Number(button.dataset.macroTab)
+    store('dado3d.macroTab', String(activeMacroTab))
+    renderMacros()
+  })
+  button.addEventListener('keydown', event => {
+    if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') return
+    event.preventDefault()
+    const offset = event.key === 'ArrowRight' ? 1 : 2
+    const next = (activeMacroTab + offset) % 3
+    find<HTMLButtonElement>(`[data-macro-tab="${next}"]`).click()
+    find<HTMLButtonElement>(`[data-macro-tab="${next}"]`).focus()
+  })
+}
+find<HTMLButtonElement>('#macro-add').addEventListener('click', () => openMacroEditor())
+find<HTMLButtonElement>('#macro-close').addEventListener('click', () => macroDialog.close())
+macroForm.addEventListener('submit', event => {
+  event.preventDefault()
+  const name = macroName.value.trim()
+  const expression = macroNotation.value.trim()
+  if (!name || !engine.inspect(expression).isValid) {
+    macroError.textContent = message('invalid')
+    macroError.hidden = false
+    macroNotation.focus()
+    return
+  }
+  const entry: Macro = { id: editingMacroId ?? crypto.randomUUID(), tab: activeMacroTab, name, notation: expression }
+  const next = editingMacroId ? macros.map(macro => macro.id === editingMacroId ? entry : macro) : [...macros, entry]
+  persistMacros(next)
+})
+macroDelete.addEventListener('click', () => {
+  const item = macros.find(macro => macro.id === editingMacroId)
+  if (!item) return
+  if (!macroDeleteArmed) {
+    macroDeleteArmed = true
+    macroDelete.textContent = `${message('deleteMacro')} “${item.name}”?`
+    return
+  }
+  persistMacros(macros.filter(macro => macro.id !== editingMacroId))
 })
 for (const button of document.querySelectorAll<HTMLButtonElement>('.die-button')) {
   button.addEventListener('click', () => {

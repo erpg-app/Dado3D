@@ -8,6 +8,11 @@ inline (`2d6+d20 = 23`); toque no resultado para ver os detalhes completos.
 O menu no canto da cena oferece as exibições **Padrão**, **Compacto** e
 **Só 3D** para voltar à edição. No modo compacto, o lápis abre a edição; no
 modo Só 3D, toque na cena para rolar novamente e use o menu ou Escape para voltar.
+No desktop, o painel lateral traz três abas de **macros** abaixo dos controles.
+No celular, alterne entre **Dados** e **Macros**. Cada botão tem nome e notação,
+rola com um toque e fica salvo apenas neste dispositivo, sem conta ou servidor.
+Use **Nova macro** para guardar a notação atual; abra `⋯` para editar ou excluir.
+A rolagem de uma macro não altera a fórmula que estava no editor.
 
 O resultado textual vem do Dicecore; a cena 3D apresenta todos os dados
 compatíveis que a fórmula gerar, mesmo em rolagens grandes. O texto continua
@@ -65,6 +70,8 @@ quando o total web supera a referência de `size-baseline.json` em mais de 5%.
 `node scripts/measure.mjs --output web-size.json` detalha cada arquivo.
 O build minifica JS e CSS e transforma os 103 catálogos traduzidos em listas
 compactas. Os arquivos fonte dos idiomas continuam legíveis para edição.
+Os novos rótulos de macros estão nos 104 idiomas. O build também compacta os
+dois arquivos JSON pequenos do tema 3D sem alterar seus dados.
 O 3D começa a preparar depois do primeiro quadro e não deve animar em repouso.
 Ao ir para segundo plano, a cena é descartada e reconstruída no retorno.
 Consulte `docs/PERFORMANCE.md` para medições no aparelho.

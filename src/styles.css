@@ -146,6 +146,11 @@ button:focus-visible, input:focus-visible, select:focus-visible, summary:focus-v
   scrollbar-width: thin;
   background: var(--bg);
 }
+.workspace-switch { height: 38px; padding: 3px; display: grid; grid-template-columns: 1fr 1fr; gap: 3px; border: 1px solid var(--line); border-radius: 11px; background: var(--panel); }
+.workspace-switch button { border: 0; border-radius: 8px; background: transparent; color: var(--muted); font-size: 12px; font-weight: 700; }
+.workspace-switch button[aria-pressed=true] { background: var(--panel-raised); color: var(--text); }
+.app-shell[data-pane=macros] .composer { display: none; }
+.app-shell[data-pane=dice] .macro-panel { display: none; }
 .composer { display: flex; flex-direction: column; gap: 8px; }
 .input-switch { height: 40px; padding: 3px; display: grid; grid-template-columns: 1fr 1fr; gap: 3px; border: 1px solid var(--line); border-radius: 12px; background: var(--panel); }
 .mode-button { min-width: 0; border: 0; border-radius: 9px; background: transparent; color: var(--muted); font-size: 13px; font-weight: 650; display: flex; align-items: center; justify-content: center; gap: 7px; }
@@ -185,6 +190,28 @@ button:focus-visible, input:focus-visible, select:focus-visible, summary:focus-v
 .compact-edit { display: none; width: 44px; height: 44px; place-items: center; border: 1px solid var(--line); border-radius: 12px; background: var(--panel); color: var(--text); }
 .compact-edit svg { width: 19px; height: 19px; }
 .compact-edit:hover { background: var(--panel-raised); }
+.macro-panel { min-width: 0; display: flex; flex-direction: column; gap: 8px; }
+.macro-heading { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.macro-heading h2 { margin: 0; font-size: 13px; font-weight: 750; }
+.macro-add { min-height: 32px; padding: 0 9px; border: 1px solid var(--line); border-radius: 9px; background: var(--panel); color: var(--text); font-size: 11px; font-weight: 650; }
+.macro-add:hover, .macro-edit:hover { border-color: var(--accent); }
+.macro-add span:first-child { color: var(--accent); font-size: 17px; line-height: 0; vertical-align: -1px; }
+.macro-tabs { display: flex; gap: 5px; border-bottom: 1px solid var(--line); }
+.macro-tabs button { min-width: 44px; min-height: 32px; padding: 0 12px; border: 0; border-bottom: 2px solid transparent; background: transparent; color: var(--muted); font-size: 12px; }
+.macro-tabs button[aria-selected=true] { border-bottom-color: var(--accent); color: var(--text); font-weight: 750; }
+.macro-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; max-height: 28dvh; overflow-y: auto; scrollbar-width: thin; }
+.macro-row { min-width: 0; min-height: 59px; display: flex; border: 1px solid var(--line); border-radius: 10px; background: var(--panel); overflow: hidden; }
+.macro-run { flex: 1; min-width: 0; padding: 8px 4px 8px 10px; display: flex; flex-direction: column; align-items: flex-start; justify-content: center; gap: 3px; border: 0; background: transparent; color: var(--text); text-align: start; }
+.macro-run:hover { background: var(--panel-raised); }
+.macro-run strong, .macro-run small { display: block; width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.macro-run strong { font-size: 12px; }
+.macro-run small { color: var(--muted); font: 10px ui-monospace, SFMono-Regular, Consolas, monospace; text-align: start; }
+.macro-edit { flex: none; width: 30px; border: 0; border-inline-start: 1px solid var(--line); background: transparent; color: var(--muted); font-size: 20px; line-height: 1; }
+.macro-actions { display: flex; justify-content: flex-end; gap: 8px; }
+.macro-save, .macro-delete { min-height: 42px; padding: 0 16px; border: 0; border-radius: 10px; font-size: 13px; font-weight: 700; }
+.macro-save { background: var(--accent); color: #101216; }
+.macro-delete { margin-inline-end: auto; background: var(--bg); color: var(--error); }
+.macro-dialog .notation-input { width: 100%; }
 
 .settings-dialog { width: min(420px, calc(100vw - 32px)); max-height: calc(100dvh - 32px); padding: 0; border: 1px solid var(--line); border-radius: 20px; background: var(--panel); color: var(--text); box-shadow: 0 25px 90px #0007; }
 .settings-dialog::backdrop { background: #050608b3; }
@@ -204,7 +231,9 @@ button:focus-visible, input:focus-visible, select:focus-visible, summary:focus-v
 @media (min-width: 850px) {
   .main-layout { display: grid; grid-template-columns: minmax(0, 1fr) minmax(330px, 400px); }
   .stage { height: 100%; min-height: 0; border-bottom: 0; border-right: 1px solid var(--line); }
-  .control-panel { max-height: none; justify-content: center; padding: 20px; gap: 12px; }
+  .control-panel { max-height: none; justify-content: center; padding: 20px; gap: 24px; }
+  .workspace-switch { display: none; }
+  .app-shell[data-pane=macros] .composer, .app-shell[data-pane=dice] .macro-panel { display: flex; }
   .die-button { min-height: 64px; }
 }
 
@@ -216,6 +245,8 @@ button:focus-visible, input:focus-visible, select:focus-visible, summary:focus-v
 .app-shell[data-view=compact] .main-layout { display: flex; }
 .app-shell[data-view=compact] .stage { flex: 1 1 auto; width: 100%; height: auto; min-height: 0; border-right: 0; border-bottom: 1px solid var(--line); }
 .app-shell[data-view=compact] .control-panel { flex: 0 0 auto; width: 100%; max-height: 45dvh; padding: 8px max(10px, env(safe-area-inset-right)) max(10px, env(safe-area-inset-bottom)) max(10px, env(safe-area-inset-left)); justify-content: flex-start; gap: 6px; }
+.app-shell[data-view=compact] .workspace-switch,
+.app-shell[data-view=compact] .macro-panel { display: none; }
 .app-shell[data-view=compact] .composer { display: grid; grid-template-columns: 44px minmax(0, 1fr); gap: 6px; }
 .app-shell[data-view=compact] .input-switch,
 .app-shell[data-view=compact] .mode-panel { display: none !important; }

@@ -30,5 +30,12 @@
   "failures": "Failures",
   "net": "Net",
   "values": "Faces",
-  "diceCount": "Dice"
+  "diceCount": "Dice",
+  "macros": "Macros",
+  "newMacro": "New macro",
+  "editMacro": "Edit macro",
+  "macroName": "Name",
+  "save": "Save",
+  "deleteMacro": "Delete",
+  "saveError": "Could not save on this device"
 }
